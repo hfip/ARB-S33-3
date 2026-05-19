@@ -3,11 +3,11 @@ const { addonBuilder } = require("stremio-addon-sdk");
 const cheerio = require("cheerio");
 const querystring = require("querystring");
 
-// ============ 1. إعدادات البروكسي والدومين الرئيسي الفعال ============
+// ============ 1. إعدادات النطاقات والبروكسي ورابط ViperTLS المحصن ============
+const VIPER_SOLVER_URL = "https://test-1-eight-zeta.vercel.app/solve"; 
 const GOOGLE_PROXY_URL = "https://script.google.com/macros/s/AKfycbwzwsaeYrNMVo39ot5D2ah72SWsN1NaKa-_0yagRowbZNnByWwBiu94mO6mAUjwVGhSrQ/exec";
 const BASE_URL = "https://m.asd.ink";
 
-// خريطة المسارات المحدثة بالكامل للأقسام
 const CATALOG_MAP = {
     "as_arabic_movies": "/category/arabic-movies-6/",
     "as_foreign_movies": "/category/foreign-movies-6/",
@@ -18,14 +18,14 @@ const CATALOG_MAP = {
     "as_dubbed_movies": "/category/%d8%a7%d9%81%d9%84%d8%a7%d9%85-%d9%85%d8%af%d8%a8%d9%84%d8%ac%d8%a9-1/",
     "as_animation_movies": "/category/%d8%a7%d9%81%d9%84%d8%a7%d9%85-%d8%a7%d9%86%d9%8a%d9%85%d9%8a%d8%b4%d9%86/",
     "as_wrestling": "/category/wwe-shows/",
-    "as_plays": "/category/%d9%85%d8%b3%d8%b1%d8%ad%d9%8a%d8%a7%d8%aa-%d8%b9%d8%b1%d8%a8%d9%8a/",
+    "as_plays": "/category/%d9%85%d8%b3%d8%b1%d8%ad%d9%8a%d8%a7%d8%aa-%d8%b9%d8%b1%d8%a8%d9%8ي/",
     "as_arabic_series": "/category/arabic-series-6/",
     "as_egyptian_series": "/category/%d9%85%d8%b3%d9%84%d8%b3%d9%84%d8%a7%d8%aa-%d9%85%d8%b5%d8%b1%d9%8a%d9%87/",
     "as_foreign_series": "/category/foreign-series-3/",
     "as_netflix_series": "/category/netfilx/%d9%85%d8%b3%d9%84%d8%b3%d9%84%d8%a7%d8%aa-netfilx-1/",
     "as_turkish_series": "/category/turkish-series-2/",
     "as_indian_series": "/category/%d9%85%d8%b3%d9%84%d8%b3%d9%84%d8%a7%d8%aa-%d9%8e%d9%86%d8%af%d9%8a%d8%a9/",
-    "as_korean_series": "/category/%d9%85%d8%b3%d9%84%d8%b3%d9%84%d8%a7%d8%aa-%d9%8a%d9%8f%d9%8وريه/",
+    "as_korean_series": "/category/%d9%85%d8%b3%d9%84%d8%b3%d9%84%d8%a7%d8%aa-%d9%8a%d9%8f%d9%8و|%d9%8a%d9%8eh/",
     "as_dubbed_series": "/category/%d9%85%d8%b3%d9%84%d8%b3%d9%84%d8%a7%d8%aa-%d9%85%d8%af%d8%a8%d9%84%d8%ac%d8%a9/",
     "as_cartoon_series": "/category/cartoon-series/",
     "as_tv_shows": "/category/%d8%a8%d8%b1%d8%a7%d9%85%d8%ac-%d8%aa%d9%84%d9%81%d8%b2%d9%8a%d9%88%d9%86%d9%8a%d8%a9/",
@@ -35,9 +35,9 @@ const CATALOG_MAP = {
 // ============ 2. بناء الـ Manifest الرسمي لستريميو ============
 const manifest = {
     id: "org.dexworld.arabseed.premium.max",
-    name: "ArabSeed Premium Max",
-    version: "1.6.0",
-    description: "نسخة مصلحة بالكامل لعرض الكتالوجات والصور والتشغيل المباشر لجميع الأقسام",
+    name: "ArabSeed Premium Max v3 - Test",
+    version: "3.1.0",
+    description: "نسخة ريبو 3 التجريبية: ميزة دمج الحلقات المنفصلة داخل بوستر المسلسل الرئيسي الموحد",
     logo: "https://m.asd.ink/wp-content/uploads/2023/01/cropped-Untitled-1-1-192x192.png",
     resources: ["catalog", "meta", "stream"],
     types: ["movie", "series"],
@@ -49,79 +49,111 @@ const manifest = {
         { type: "movie", id: "as_indian_movies", name: "عرب سيد - أفلام هندية", extra: [{ name: "search", isRequired: false }, { name: "skip", isRequired: false }] },
         { type: "movie", id: "as_turkish_movies", name: "عرب سيد - أفلام تركية", extra: [{ name: "search", isRequired: false }, { name: "skip", isRequired: false }] },
         { type: "movie", id: "as_animation_movies", name: "عرب سيد - أنيميشن كرتون", extra: [{ name: "search", isRequired: false }, { name: "skip", isRequired: false }] },
-        { type: "movie", id: "as_wrestling", name: "عرب سيد - مصارعة حرة", extra: [{ name: "search", isRequired: false }, { name: "skip", isRequired: false }] },
-        { type: "movie", id: "as_plays", name: "عرب سيد - مسرحيات عربية", extra: [{ name: "search", isRequired: false }, { name: "skip", isRequired: false }] },
         { type: "series", id: "as_arabic_series", name: "عرب سيد - مسلسلات عربية", extra: [{ name: "search", isRequired: false }, { name: "skip", isRequired: false }] },
         { type: "series", id: "as_egyptian_series", name: "عرب سيد - مسلسلات مصرية", extra: [{ name: "search", isRequired: false }, { name: "skip", isRequired: false }] },
         { type: "series", id: "as_foreign_series", name: "عرب سيد - مسلسلات أجنبية", extra: [{ name: "search", isRequired: false }, { name: "skip", isRequired: false }] },
         { type: "series", id: "as_netflix_series", name: "عرب سيد - مسلسلات Netflix", extra: [{ name: "search", isRequired: false }, { name: "skip", isRequired: false }] },
         { type: "series", id: "as_turkish_series", name: "عرب سيد - مسلسلات تركية", extra: [{ name: "search", isRequired: false }, { name: "skip", isRequired: false }] },
-        { type: "series", id: "as_korean_series", name: "عرب سيد - مسلسلات كورية / آسيوية", extra: [{ name: "search", isRequired: false }, { name: "skip", isRequired: false }] },
+        { type: "series", id: "as_indian_series", name: "عرب سيد - مسلسلات هندية", extra: [{ name: "search", isRequired: false }, { name: "skip", isRequired: false }] },
+        { type: "series", id: "as_korean_series", name: "عرب سيد - مسلسلات آسيوية", extra: [{ name: "search", isRequired: false }, { name: "skip", isRequired: false }] },
         { type: "series", id: "as_cartoon_series", name: "عرب سيد - مسلسلات كرتون", extra: [{ name: "search", isRequired: false }, { name: "skip", isRequired: false }] },
-        { type: "series", id: "as_tv_shows", name: "عرب سيد - برامج تلفزيونية", extra: [{ name: "search", isRequired: false }, { name: "skip", isRequired: false }] },
         { type: "series", id: "as_ramadan_2025", name: "عرب سيد - مسلسلات رمضان", extra: [{ name: "search", isRequired: false }, { name: "skip", isRequired: false }] }
     ]
 };
 
 const builder = new addonBuilder(manifest);
 
-async function fetchViaProxy(action, targetUrl = '', searchQuery = '') {
+// ============ 3. محرك الجلب الذكي الهجين السحابي ============
+async function getHtmlSmartly(action, targetUrl = '', searchQuery = '') {
+    let finalTargetUrl = targetUrl;
+    if (action === 'search') {
+        finalTargetUrl = `${BASE_URL}/find/?q=${encodeURIComponent(searchQuery)}`;
+    }
+
+    try {
+        const response = await fetch(VIPER_SOLVER_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ url: finalTargetUrl, preset: "edge_133", timeout: 15 })
+        });
+        if (response.ok) {
+            const data = await response.json();
+            if (data && data.html && !data.html.includes("Just a moment...") && data.html.includes("movie__block")) {
+                return data.html;
+            }
+        }
+    } catch (e) {}
+
     try {
         let proxyUrl = `${GOOGLE_PROXY_URL}?action=${action}`;
         if (action === 'search') proxyUrl += `&q=${encodeURIComponent(searchQuery)}`;
         else if (action === 'get_links') proxyUrl += `&url=${encodeURIComponent(targetUrl)}`;
 
         const response = await fetch(proxyUrl, { method: 'GET' });
-        if (!response.ok) return null;
-        
-        const buffer = await response.arrayBuffer();
-        return new TextDecoder('utf-8').decode(buffer);
-    } catch (err) {
-        return null;
-    }
+        if (response.ok) {
+            const buffer = await response.arrayBuffer();
+            const text = new TextDecoder('utf-8').decode(buffer);
+            if (text && !text.includes("Just a moment...") && text.includes("movie__block")) {
+                return text;
+            }
+        }
+    } catch (err) {}
+    return null;
 }
 
-// ============ 3. معالج الكتالوجات المصلح لتفادي مشاكل البوسترات ============
+// ============ 4. معالج الكتالوجات (دمج المسلسلات وتطهير العناوين) ============
 async function catalogHandler({ type, id, extra }) {
     const skip = parseInt(extra.skip) || 0;
     const search = extra.search || '';
     const page = Math.floor(skip / 30) + 1;
 
-    let htmlData = "";
-    if (search) {
-        htmlData = await fetchViaProxy('search', '', search);
-    } else {
-        const categoryPath = CATALOG_MAP[id] || "/category/arabic-movies-6/";
-        const targetUrl = page > 1 ? `${BASE_URL}${categoryPath}page/${page}/` : `${BASE_URL}${categoryPath}`;
-        htmlData = await fetchViaProxy('get_links', targetUrl);
-    }
+    const categoryPath = CATALOG_MAP[id] || "/category/arabic-movies-6/";
+    const targetUrl = page > 1 ? `${BASE_URL}${categoryPath}page/${page}/` : `${BASE_URL}${categoryPath}`;
 
+    let htmlData = await getHtmlSmartly(search ? 'search' : 'get_links', targetUrl, search);
     if (!htmlData) return { metas: [] };
+
     const $ = cheerio.load(htmlData);
     const metas = [];
+    const seenSeries = new Set(); // لمنع تكرار نفس بوستر المسلسل في الشاشة الرئيسية
 
-    // السيلكتور الذكي والمصلح لقراءة البنية الجديدة مباشرة
     $('.MovieBlock, .Block--Item, article, .Small--Box, .movie__block, .post-list, a.movie__block').each((i, el) => {
         const $el = $(el);
-        
-        // إصلاح التقاط الرابط والعنوان سواء كان العنصر نفسه رابطاً أو حاوياً
         let link = $el.attr('href') || $el.find('a').first().attr('href');
         let title = $el.attr('title') || $el.find('h3, h4, .BlockTitle, .Title, p').first().text().trim() || $el.find('img').first().attr('alt');
         let poster = $el.find('img').first().attr('data-src') || $el.find('img').first().attr('src');
 
         if (link && title) {
             if (!link.startsWith('http')) link = new URL(link, BASE_URL).href;
-            
-            // تحويل وتطهير دومينات الصور المحظورة وتوجيهها للدومين الفعال لتعرض فوراً في ستريميو
             if (poster) {
                 if (!poster.startsWith('http')) poster = new URL(poster, BASE_URL).href;
                 poster = poster.replace(/https?:\/\/[^/]+/g, BASE_URL);
             }
 
+            let cleanTitle = title;
+            let finalType = type;
+
+            // إذا كنا في قسم المسلسلات، نقوم بتطهير العنوان ودمجه
+            if (type === "series" || title.includes("الموسم") || title.includes("مسلسل")) {
+                finalType = "series";
+                // قص الأجزاء التي تسبب تكرار الحلقات مثل: الحلقة 1، الحلقة 2... إلخ
+                cleanTitle = title.replace(/الحلقة\s+\d+/g, '')
+                                  .replace(/والأخيرة/g, '')
+                                  .replace(/حلقة\s+\d+/g, '')
+                                  .replace(/\s+-\s+$/g, '')
+                                  .trim();
+
+                // إذا تمت إضافة هذا المسلسل في الصفحة مسبقاً، نتخطى تكراره
+                if (seenSeries.has(cleanTitle)) {
+                    return; 
+                }
+                seenSeries.add(cleanTitle);
+            }
+
             metas.push({
                 id: 'as_' + Buffer.from(link).toString('base64url'),
-                type: type,
-                name: title,
+                type: finalType,
+                name: cleanTitle,
                 poster: poster || '',
                 posterShape: 'poster'
             });
@@ -131,12 +163,12 @@ async function catalogHandler({ type, id, extra }) {
     return { metas };
 }
 
-// ============ 4. معالج الميتا ============
+// ============ 5. معالج الميتا (توليد الحلقات والمواسم داخل البوستر الموحد) ============
 async function metaHandler({ type, id }) {
     if (!id.startsWith('as_')) return { meta: {} };
     try {
         const pageUrl = Buffer.from(id.replace('as_', ''), 'base64url').toString();
-        const htmlData = await fetchViaProxy('get_links', pageUrl);
+        const htmlData = await getHtmlSmartly('get_links', pageUrl);
         if (!htmlData) return { meta: {} };
 
         const $ = cheerio.load(htmlData);
@@ -144,29 +176,55 @@ async function metaHandler({ type, id }) {
         let poster = $('.Poster img, .single-thumb img, .movie-poster img').first().attr('src') || $('.post__image img').first().attr('data-src');
         const description = $('.descrip, .StoryLine, .story').first().text().trim();
 
-        if (poster) {
-            poster = poster.replace(/https?:\/\/[^/]+/g, BASE_URL);
-        }
+        if (poster) poster = poster.replace(/https?:\/\/[^/]+/g, BASE_URL);
 
         const meta = { id, type, name, poster, background: poster, description, genres: [] };
         $('.Genre a, .genres a').each((i, el) => meta.genres.push($(el).text().trim()));
 
+        // إذا كان نوع العمل سلسلة، نقوم بجلب قائمة الحلقات المتوفرة داخل الصفحة التابعة له
         if (type === 'series') {
             const videos = [];
-            $('.EpisodesList a, .episodes-list a, .EpsList a').each((i, el) => {
+            
+            // البحث عن مسارات الحلقات في البنية التحتية لعرب سيد
+            const epSelectors = '.EpisodesList a, .episodes-list a, .EpsList a, .Sub_EpsList a, .post_episodes a';
+            $(epSelectors).each((i, el) => {
                 const epUrl = $(el).attr('href');
                 const epTitle = $(el).text().trim() || `الحلقة ${i + 1}`;
                 if (epUrl) {
+                    // استخراج رقم الحلقة من النص
+                    const epNumber = parseInt(epTitle.match(/\d+/)?.[0]) || (i + 1);
                     videos.push({
                         id: 'as_' + Buffer.from(epUrl).toString('base64url'),
                         title: epTitle,
-                        season: 1,
-                        episode: parseInt(epTitle.match(/\d+/)?.[0]) || (i + 1),
-                        released: new Date().toISOString()
+                        season: 1, // تثبيت الموسم الأول، ويمكن تطويره لاحقاً إذا وجد مجلد مواسم
+                        episode: epNumber,
+                        released: new Date(Date.now() - (i * 60000)).toISOString() // ترتيب زمني منظم
                     });
                 }
             });
-            if (videos.length > 0) meta.videos = videos.reverse();
+
+            // إذا عثرنا على حلقات، نقوم بتمريرها؛ وإذا لم نجد (لأن الصفحة قد تكون حلقة منفصلة بحد ذاتها)، نضعها كحلقة وحيدة
+            if (videos.length > 0) {
+                // إزالة التكرار إن وجد وترتيب الحلقات تصاعدياً من 1 إلى الأعلى
+                const uniqueVideos = [];
+                const seenEps = new Set();
+                videos.reverse().forEach(v => {
+                    if (!seenEps.has(v.episode)) {
+                        seenEps.add(v.episode);
+                        uniqueVideos.push(v);
+                    }
+                });
+                meta.videos = uniqueVideos.sort((a, b) => a.episode - b.episode);
+            } else {
+                // حالة الطوارئ: إذا دخل المستخدم على رابط حلقة واحدة، نجعلها تظهر كالحلقة الأولى داخل البوستر
+                meta.videos = [{
+                    id: id,
+                    title: name,
+                    season: 1,
+                    episode: 1,
+                    released: new Date().toISOString()
+                }];
+            }
         }
         return { meta };
     } catch (err) {
@@ -174,7 +232,7 @@ async function metaHandler({ type, id }) {
     }
 }
 
-// ============ 5. معالج البث وفك سيرفر GameHub والـ Base64 ============
+// ============ 6. معالج البث والمصادر المشتركة ============
 async function streamHandler({ type, id }) {
     const streams = [];
     try {
@@ -190,7 +248,7 @@ async function streamHandler({ type, id }) {
             const mediaTitle = metaData.meta ? metaData.meta.name : "";
             if (!mediaTitle) return { streams: [] };
 
-            const searchHtml = await fetchViaProxy('search', '', mediaTitle);
+            const searchHtml = await getHtmlSmartly('search', '', mediaTitle);
             if (!searchHtml) return { streams: [] };
             
             const $s = cheerio.load(searchHtml);
@@ -200,12 +258,11 @@ async function streamHandler({ type, id }) {
             watchUrl = targetPageUrl.endsWith('/watch/') ? targetPageUrl : targetPageUrl.replace(/\/$/, '') + '/watch/';
         }
 
-        const watchHtml = await fetchViaProxy('get_links', watchUrl);
+        const watchHtml = await getHtmlSmartly('get_links', watchUrl);
         if (!watchHtml) return { streams: [] };
         
         const servers = [];
 
-        // فك شفرات روابط Base64 (play.php)
         const b64Regex = /play\.php\?url=([a-zA-Z0-9+/=]+)/g;
         let match;
         while ((match = b64Regex.exec(watchHtml)) !== null) {
@@ -230,10 +287,9 @@ async function streamHandler({ type, id }) {
 
         const optimizedServers = servers.slice(0, 3);
         for (const server of optimizedServers) {
-            let serverHtml = await fetchViaProxy('get_links', server.link);
+            let serverHtml = await getHtmlSmartly('get_links', server.link);
             if (!serverHtml) continue;
 
-            // منطق فك حزم GameHub المشفرة
             if (serverHtml.includes("eval(function(p,a,c,k,e,")) {
                 const matchJS = /eval\(function\(p,a,c,k,e,[dr]\).*?\}\('(.*?)',(\d+),(\d+),'(.*?)'\.split\('\|'\)/s.exec(serverHtml);
                 if (matchJS) {
