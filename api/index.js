@@ -32,16 +32,16 @@ const CATALOG_MAP = {
     "as_ramadan_2025": "/category/%d9%85%d8%b3%d9%84%d8%b3%d9%84%d8%a7%d8%aa-%d8%b1%d9%85%d8%b6%d8%a7%d9%86/ramadan-series-2025/"
 };
 
-// ============ 2. الـ Manifest المحدث بإضافة الـ Prefix الجديد إجبارياً ============
+// ============ 2. الـ Manifest المحدث بالكامل ============
 const manifest = {
-    id: "org.dexworld.arabseed.premium.max.v3", // تم تعديل الـ id لتصفير الكاش القديم في تطبيق ستريميو
-    name: "ArabSeed Premium Max v3 - Test",
-    version: "3.3.0",
-    description: "دمج احترافي للمسلسلات ببوستر موحد كقرمزي عبر التجميع العكسي وبصمة ViperTLS السحرية",
+    id: "org.dexworld.arabseed.premium.max.v4", // تغيير الـ ID لتصفير كاش ستريميو إجبارياً
+    name: "ArabSeed Premium Max v4 - Test",
+    version: "4.0.0",
+    description: "التجميع القسري للمسلسلات ببوسترات موحدة موثوقة ونظام الكشط العكسي المطور",
     logo: "https://m.asd.ink/wp-content/uploads/2023/01/cropped-Untitled-1-1-192x192.png",
     resources: ["catalog", "meta", "stream"],
     types: ["movie", "series"],
-    idPrefixes: ["tt", "as_", "asSeries_"], // إضافة المعرّف الجديد هنا لكي يفهمه ستريميو
+    idPrefixes: ["tt", "as_", "asSeries_"],
     catalogs: [
         { type: "movie", id: "as_arabic_movies", name: "عرب سيد - أفلام عربية", extra: [{ name: "search", isRequired: false }, { name: "skip", isRequired: false }] },
         { type: "movie", id: "as_foreign_movies", name: "عرب سيد - أفلام أجنبية", extra: [{ name: "search", isRequired: false }, { name: "skip", isRequired: false }] },
@@ -101,7 +101,7 @@ async function getHtmlSmartly(action, targetUrl = '', searchQuery = '') {
     return null;
 }
 
-// دالة متطورة لتطهير العناوين وفصل الحلقات بشكل قطعي
+// دالة لتطهير العناوين ودمج المواسم والحلقات قسرياً في بوستر واحد
 function cleanSeriesTitle(title) {
     return title.replace(/الحلقة\s+\d+/g, '')
                 .replace(/والأخيرة/g, '')
@@ -114,7 +114,7 @@ function cleanSeriesTitle(title) {
                 .trim();
 }
 
-// ============ 4. معالج الكتالوجات المطور ============
+// ============ 4. معالج الكتالوجات (قفل التكرار نهائياً) ============
 async function catalogHandler({ type, id, extra }) {
     const skip = parseInt(extra.skip) || 0;
     const search = extra.search || '';
@@ -143,7 +143,8 @@ async function catalogHandler({ type, id, extra }) {
                 poster = poster.replace(/https?:\/\/[^/]+/g, BASE_URL);
             }
 
-            if (type === "series" || title.includes("مسلسل") || title.includes("الحلقة") || title.includes("حلقة")) {
+            // التحقق القسري الشامل إذا كان العمل ينتمي للمسلسلات
+            if (type === "series" || id.includes("series") || title.includes("مسلسل") || title.includes("الحلقة") || title.includes("حلقة")) {
                 const cleanName = cleanSeriesTitle(title);
                 if (seenSeries.has(cleanName)) return; 
                 seenSeries.add(cleanName);
@@ -170,7 +171,7 @@ async function catalogHandler({ type, id, extra }) {
     return { metas };
 }
 
-// ============ 5. معالج الميتا (توليد قائمة الحلقات بالبحث العكسي) ============
+// ============ 5. معالج الميتا (البحث العكسي وتوليد الحلقات) ============
 async function metaHandler({ type, id }) {
     if (id.startsWith('as_')) {
         try {
@@ -182,16 +183,15 @@ async function metaHandler({ type, id }) {
             let poster = $('.Poster img, .single-thumb img, .movie-poster img').first().attr('src') || $('.post__image img').first().attr('data-src');
             const description = $('.descrip, .StoryLine, .story').first().text().trim();
             if (poster) poster = poster.replace(/https?:\/\/[^/]+/g, BASE_URL);
-            return { meta: { id, type, name, poster, background: poster, description, genres: ["عرب سيد"] } };
+            return { meta: { id, type: "movie", name, poster, background: poster, description, genres: ["عرب سيد"] } };
         } catch (e) { return { meta: {} }; }
     }
 
     if (id.startsWith('asSeries_')) {
         try {
             const seriesName = Buffer.from(id.replace('asSeries_', ''), 'base64url').toString();
-            
             const searchHtml = await getHtmlSmartly('search', '', seriesName);
-            if (!searchHtml) return { meta: { id, type, name: seriesName, videos: [] } };
+            if (!searchHtml) return { meta: { id, type: "series", name: seriesName, videos: [] } };
 
             const $s = cheerio.load(searchHtml);
             const videos = [];
@@ -240,7 +240,7 @@ async function metaHandler({ type, id }) {
                 }
             };
         } catch (err) {
-            return { meta: { id, type, name: "مسلسل مجمع", videos: [] } };
+            return { meta: { id, type: "series", name: "مسلسل مجمع", videos: [] } };
         }
     }
 
@@ -252,7 +252,6 @@ async function streamHandler({ type, id }) {
     const streams = [];
     try {
         let watchUrl = "";
-        
         if (id.startsWith('as_')) {
             const pageUrl = Buffer.from(id.replace('as_', ''), 'base64url').toString();
             watchUrl = pageUrl.endsWith('/watch/') ? pageUrl : pageUrl.replace(/\/$/, '') + '/watch/';
@@ -277,7 +276,6 @@ async function streamHandler({ type, id }) {
         if (!watchHtml) return { streams: [] };
         
         const servers = [];
-
         const b64Regex = /play\.php\?url=([a-zA-Z0-9+/=]+)/g;
         let match;
         while ((match = b64Regex.exec(watchHtml)) !== null) {
@@ -345,9 +343,7 @@ async function streamHandler({ type, id }) {
         }
 
         return { streams };
-    } catch (err) {
-        return { streams: [] };
-    }
+    } catch (err) { return { streams: [] }; }
 }
 
 builder.defineCatalogHandler(catalogHandler);
@@ -356,38 +352,50 @@ builder.defineStreamHandler(streamHandler);
 
 const addonInterface = builder.getInterface();
 
+// ============ 7. الراوتر القياسي الشامل المصلح لمنع تضارب الحزم والمواسم ============
 export default async function handler(req, res) {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Headers', '*');
-    res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Content-Type', 'application/json; charset=utf-8');
 
     if (req.method === 'OPTIONS') return res.status(200).end();
 
     const url = req.url;
+    
+    // 1. المانيفست الرسمي
     if (url === '/' || url === '/manifest.json') {
         return res.status(200).json(addonInterface.manifest);
     }
 
+    // 2. راوتر الكتالوجات القياسي
     const catalogMatch = url.match(/^\/catalog\/([^/]+)\/([^/]+)(?:\/(.+))?\.json$/);
     if (catalogMatch) {
-        const [, type, id, extraStr] = catalogMatch;
-        const extra = extraStr ? querystring.parse(extraStr) : {};
-        const result = await catalogHandler({ type, id, extra });
-        return res.status(200).json(result);
+        try {
+            const [, type, id, extraStr] = catalogMatch;
+            const extra = extraStr ? querystring.parse(extraStr) : {};
+            const result = await catalogHandler({ type, id, extra });
+            return res.status(200).json(result);
+        } catch (e) { return res.status(200).json({ metas: [] }); }
     }
 
+    // 3. راوتر الميتا المصلح - يطابق تفكيك قرمزي ويمنع الانهيار للنوع المدمج
     const metaMatch = url.match(/^\/meta\/([^/]+)\/(.+)\.json$/);
     if (metaMatch) {
-        const [, type, id] = metaMatch;
-        const result = await metaHandler({ type, id: decodeURIComponent(id) });
-        return res.status(200).json(result);
+        try {
+            const [, type, id] = metaMatch;
+            const result = await metaHandler({ type, id: decodeURIComponent(id) });
+            return res.status(200).json(result);
+        } catch (e) { return res.status(200).json({ meta: {} }); }
     }
 
+    // 4. راوتر مصادر البث
     const streamMatch = url.match(/^\/stream\/([^/]+)\/(.+)\.json$/);
     if (streamMatch) {
-        const [, type, id] = streamMatch;
-        const result = await streamHandler({ type, id: decodeURIComponent(id) });
-        return res.status(200).json(result);
+        try {
+            const [, type, id] = streamMatch;
+            const result = await streamHandler({ type, id: decodeURIComponent(id) });
+            return res.status(200).json(result);
+        } catch (e) { return res.status(200).json({ streams: [] }); }
     }
 
     return res.status(404).json({ error: 'Not found' });
