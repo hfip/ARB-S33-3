@@ -3,7 +3,7 @@ const { addonBuilder } = require("stremio-addon-sdk");
 const cheerio = require("cheerio");
 const querystring = require("querystring");
 
-// ============ 1. الإعدادات السحابية المحصنة ============
+// ============ 1. الإعدادات السحابية ورابط ViperTLS المحصن ============
 const VIPER_SOLVER_URL = "https://test-1-eight-zeta.vercel.app/solve"; 
 const GOOGLE_PROXY_URL = "https://script.google.com/macros/s/AKfycbwzwsaeYrNMVo39ot5D2ah72SWsN1NaKa-_0yagRowbZNnByWwBiu94mO6mAUjwVGhSrQ/exec";
 const BASE_URL = "https://m.asd.ink";
@@ -32,16 +32,16 @@ const CATALOG_MAP = {
     "as_ramadan_2025": "/category/%d9%85%d8%b3%d9%84%d8%b3%d9%84%d8%a7%d8%aa-%d8%b1%d9%85%d8%b6%d8%a7%d9%86/ramadan-series-2025/"
 };
 
-// ============ 2. الـ Manifest الـ Premium المطور ============
+// ============ 2. الـ Manifest المحدث بإضافة الـ Prefix الجديد إجبارياً ============
 const manifest = {
-    id: "org.dexworld.arabseed.premium.max",
+    id: "org.dexworld.arabseed.premium.max.v3", // تم تعديل الـ id لتصفير الكاش القديم في تطبيق ستريميو
     name: "ArabSeed Premium Max v3 - Test",
-    version: "3.2.0",
-    description: "تجميع المسلسلات في بوستر موحد بنظام الكشط العكسي المستوحى من هندسة قرمزي الفاخرة",
+    version: "3.3.0",
+    description: "دمج احترافي للمسلسلات ببوستر موحد كقرمزي عبر التجميع العكسي وبصمة ViperTLS السحرية",
     logo: "https://m.asd.ink/wp-content/uploads/2023/01/cropped-Untitled-1-1-192x192.png",
     resources: ["catalog", "meta", "stream"],
     types: ["movie", "series"],
-    idPrefixes: ["tt", "as_", "asSeries_"],
+    idPrefixes: ["tt", "as_", "asSeries_"], // إضافة المعرّف الجديد هنا لكي يفهمه ستريميو
     catalogs: [
         { type: "movie", id: "as_arabic_movies", name: "عرب سيد - أفلام عربية", extra: [{ name: "search", isRequired: false }, { name: "skip", isRequired: false }] },
         { type: "movie", id: "as_foreign_movies", name: "عرب سيد - أفلام أجنبية", extra: [{ name: "search", isRequired: false }, { name: "skip", isRequired: false }] },
@@ -101,19 +101,20 @@ async function getHtmlSmartly(action, targetUrl = '', searchQuery = '') {
     return null;
 }
 
-// دالة مساعدة لتطهير عنوان المسلسل لدمج الحلقات
+// دالة متطورة لتطهير العناوين وفصل الحلقات بشكل قطعي
 function cleanSeriesTitle(title) {
     return title.replace(/الحلقة\s+\d+/g, '')
                 .replace(/والأخيرة/g, '')
                 .replace(/حلقة\s+\d+/g, '')
-                .replace(/الموسم\s+\u0620-\u064A\d+/g, '') // إزالة كلمة الموسم ورقمه مؤقتاً للتجميع الشامل
+                .replace(/الموسم\s+\d+/g, '')
+                .replace(/موسم\s+\d+/g, '')
                 .replace(/كامل/g, '')
                 .replace(/\s+-\s+$/g, '')
                 .replace(/\s+/g, ' ')
                 .trim();
 }
 
-// ============ 4. معالج الكتالوجات (تجميع المسلسلات في بوستر واحد) ============
+// ============ 4. معالج الكتالوجات المطور ============
 async function catalogHandler({ type, id, extra }) {
     const skip = parseInt(extra.skip) || 0;
     const search = extra.search || '';
@@ -142,12 +143,11 @@ async function catalogHandler({ type, id, extra }) {
                 poster = poster.replace(/https?:\/\/[^/]+/g, BASE_URL);
             }
 
-            if (type === "series" || title.includes("مسلسل") || title.includes("الحلقة")) {
+            if (type === "series" || title.includes("مسلسل") || title.includes("الحلقة") || title.includes("حلقة")) {
                 const cleanName = cleanSeriesTitle(title);
-                if (seenSeries.has(cleanName)) return; // منع تكرار البوستر على الشاشة الرئيسية
+                if (seenSeries.has(cleanName)) return; 
                 seenSeries.add(cleanName);
 
-                // صناعة معرف مخصص للمسلسل الموحد يحتوي على اسمه الصافي لكي نبحث عنه في الميتا
                 metas.push({
                     id: 'asSeries_' + Buffer.from(cleanName).toString('base64url'),
                     type: "series",
@@ -156,7 +156,6 @@ async function catalogHandler({ type, id, extra }) {
                     posterShape: 'poster'
                 });
             } else {
-                // الأفلام تنزل بشكل طبيعي وصافي
                 metas.push({
                     id: 'as_' + Buffer.from(link).toString('base64url'),
                     type: "movie",
@@ -171,10 +170,9 @@ async function catalogHandler({ type, id, extra }) {
     return { metas };
 }
 
-// ============ 5. معالج الميتا (الكشط العكسي الفاخر لتوليد الحلقات بالاسم) ============
+// ============ 5. معالج الميتا (توليد قائمة الحلقات بالبحث العكسي) ============
 async function metaHandler({ type, id }) {
     if (id.startsWith('as_')) {
-        // معالجة الأفلام العادية
         try {
             const pageUrl = Buffer.from(id.replace('as_', ''), 'base64url').toString();
             const htmlData = await getHtmlSmartly('get_links', pageUrl);
@@ -189,10 +187,8 @@ async function metaHandler({ type, id }) {
     }
 
     if (id.startsWith('asSeries_')) {
-        // هندسة التجميع للمسلسلات: البحث التلقائي عن اسم المسلسل لجلب كافة حلقاته المنشورة
         try {
             const seriesName = Buffer.from(id.replace('asSeries_', ''), 'base64url').toString();
-            console.log(`جاري كشط كافة حلقات ومواسم مسلسل: ${seriesName}`);
             
             const searchHtml = await getHtmlSmartly('search', '', seriesName);
             if (!searchHtml) return { meta: { id, type, name: seriesName, videos: [] } };
@@ -213,16 +209,14 @@ async function metaHandler({ type, id }) {
                         mainPoster = img.replace(/https?:\/\/[^/]+/g, BASE_URL);
                     }
 
-                    // استخراج رقم الحلقة بدقة من العنوان الخاص بها
                     const epMatch = epTitle.match(/الحلقة\s+(\d+)/) || epTitle.match(/حلقة\s+(\d+)/);
                     const epNumber = epMatch ? parseInt(epMatch[1]) : (i + 1);
 
-                    // استخراج رقم الموسم إن وجد، وإلا نثبته على الموسم 1
                     const seasonMatch = epTitle.match(/الموسم\s+(\d+)/) || epTitle.match(/موسم\s+(\d+)/);
                     const seasonNumber = seasonMatch ? parseInt(seasonMatch[1]) : 1;
 
                     videos.push({
-                        id: 'as_' + Buffer.from(link).toString('base64url'), // المعرف الحقيقي لصفحة الحلقة لتشغيل المصادر
+                        id: 'as_' + Buffer.from(link).toString('base64url'),
                         title: epTitle,
                         season: seasonNumber,
                         episode: epNumber,
@@ -231,7 +225,6 @@ async function metaHandler({ type, id }) {
                 }
             });
 
-            // ترتيب الحلقات بشكل تصاعدي ومنظم للمشاهد داخل شاشة ستريميو
             videos.sort((a, b) => (a.season - b.season) || (a.episode - b.episode));
 
             return {
@@ -254,7 +247,7 @@ async function metaHandler({ type, id }) {
     return { meta: {} };
 }
 
-// ============ 6. معالج البث المطور لفك شفرات السيرفرات المباشرة ============
+// ============ 6. معالج البث والمصادر المباشرة ============
 async function streamHandler({ type, id }) {
     const streams = [];
     try {
@@ -265,7 +258,6 @@ async function streamHandler({ type, id }) {
             watchUrl = pageUrl.endsWith('/watch/') ? pageUrl : pageUrl.replace(/\/$/, '') + '/watch/';
         } 
         else if (id.startsWith('tt')) {
-            // دعم البحث والتشغيل التلقائي عبر الكود المدمج من IMDB
             const metaResponse = await fetch(`https://v3-cinemeta.stremio.com/meta/${type}/${id}.json`);
             const metaData = await metaResponse.json();
             const mediaTitle = metaData.meta ? metaData.meta.name : "";
@@ -286,7 +278,6 @@ async function streamHandler({ type, id }) {
         
         const servers = [];
 
-        // فك شفرات روابط Base64 (play.php) لقسم عرب سيد مباشر
         const b64Regex = /play\.php\?url=([a-zA-Z0-9+/=]+)/g;
         let match;
         while ((match = b64Regex.exec(watchHtml)) !== null) {
@@ -314,7 +305,6 @@ async function streamHandler({ type, id }) {
             let serverHtml = await getHtmlSmartly('get_links', server.link);
             if (!serverHtml) continue;
 
-            // منطق فك حزم GameHub المشفرة الشهيرة داخل مواقع البث العربي
             if (serverHtml.includes("eval(function(p,a,c,k,e,")) {
                 const matchJS = /eval\(function\(p,a,c,k,e,[dr]\).*?\}\('(.*?)',(\d+),(\d+),'(.*?)'\.split\('\|'\)/s.exec(serverHtml);
                 if (matchJS) {
