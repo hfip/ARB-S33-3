@@ -3,7 +3,7 @@ const { addonBuilder } = require("stremio-addon-sdk");
 const cheerio = require("cheerio");
 const querystring = require("querystring");
 
-// ============ 1. الإعدادات السحابية المحصنة ============
+// ============ 1. الإعدادات السحابية ورابط ViperTLS المحصن ============
 const VIPER_SOLVER_URL = "https://test-1-eight-zeta.vercel.app/solve"; 
 const GOOGLE_PROXY_URL = "https://script.google.com/macros/s/AKfycbwzwsaeYrNMVo39ot5D2ah72SWsN1NaKa-_0yagRowbZNnByWwBiu94mO6mAUjwVGhSrQ/exec";
 const BASE_URL = "https://m.asd.ink";
@@ -18,7 +18,7 @@ const CATALOG_MAP = {
     "as_dubbed_movies": "/category/%d8%a7%d9%81%d9%84%d8%a7%d9%85-%d9%85%d8%af%d8%a8%d9%84%d8%ac%d8%a9-1/",
     "as_animation_movies": "/category/%d8%a7%d9%81%d9%84%d8%a7%d9%85-%d8%a7%d9%86%d9%8a%d9%85%d9%8a%d8%b4%d9%86/",
     "as_wrestling": "/category/wwe-shows/",
-    "as_plays": "/category/%d9%85%d8%b3%d8%b1%d8%ad%d9%8a%d8%a7%d8%aa-%d8%b9%d8%b1%d8%a8%d9%8a/",
+    "as_plays": "/category/%d9%85%d8%b3%d8%b1%d8%ad%d9%8a%d8%a7%d8%aa-%d8%b9%d8%b1%d8%a8%d9%8ي/",
     "as_arabic_series": "/category/arabic-series-6/",
     "as_egyptian_series": "/category/%d9%85%d8%b3%d9%84%d8%b3%d9%84%d8%a7%d8%aa-%d9%85%d8%b5%d8%b1%d9%8a%d9%87/",
     "as_foreign_series": "/category/foreign-series-3/",
@@ -34,10 +34,10 @@ const CATALOG_MAP = {
 
 // ============ 2. الـ Manifest الـ Premium المطور لـ ريبو 3 ============
 const manifest = {
-    id: "org.dexworld.arabseed.premium.max.v5", // تصفير كاش ستريميو بالكامل
-    name: "ArabSeed Premium Max v5 - Test",
-    version: "5.0.0",
-    description: "نظام تجميع الحلقات الديناميكي الذكي من داخل حاوية العرض لعرب سيد بتزوير بصمة ViperTLS",
+    id: "org.dexworld.arabseed.premium.max.v6", // تصفير كاش ستريميو بالكامل لمنع التضارب
+    name: "ArabSeed Premium Max v6 - Test",
+    version: "6.0.0",
+    description: "إصلاح فوري لظهور الكتالوجات مع ميزة فرد الحلقات الديناميكية وسيرفر ViperTLS السريع",
     logo: "https://m.asd.ink/wp-content/uploads/2023/01/cropped-Untitled-1-1-192x192.png",
     resources: ["catalog", "meta", "stream"],
     types: ["movie", "series"],
@@ -63,7 +63,7 @@ const manifest = {
 
 const builder = new addonBuilder(manifest);
 
-// ============ 3. محرك الجلب الذكي الهجين السحابي ============
+// ============ 3. محرك الجلب الذكي الهجين السحابي (مصلح ومفتوح الأمان الحين) ============
 async function getHtmlSmartly(action, targetUrl = '', searchQuery = '') {
     let finalTargetUrl = targetUrl;
     if (action === 'search') {
@@ -78,7 +78,8 @@ async function getHtmlSmartly(action, targetUrl = '', searchQuery = '') {
         });
         if (response.ok) {
             const data = await response.json();
-            if (data && data.html && !data.html.includes("Just a moment...")) {
+            // إصلاح الشرط: نضمن فقط وجود نص حقيقي من السيرفر لبث الكتالوجات بدون حظر
+            if (data && data.html && !data.html.includes("Just a moment...") && data.html.length > 5000) {
                 return data.html;
             }
         }
@@ -93,7 +94,7 @@ async function getHtmlSmartly(action, targetUrl = '', searchQuery = '') {
         if (response.ok) {
             const buffer = await response.arrayBuffer();
             const text = new TextDecoder('utf-8').decode(buffer);
-            if (text && !text.includes("Just a moment...")) {
+            if (text && !text.includes("Just a moment...") && text.length > 5000) {
                 return text;
             }
         }
@@ -129,7 +130,6 @@ async function catalogHandler({ type, id, extra }) {
                 poster = poster.replace(/https?:\/\/[^/]+/g, BASE_URL);
             }
 
-            // إجبار الكتالوج على منح الحلقات نوع مسلسل "series" لتفعيل قائمة التشغيل المجمعة داخلها
             let isSeriesItem = type === "series" || id.includes("series") || title.includes("مسلسل") || title.includes("الحلقة") || title.includes("حلقة");
 
             metas.push({
@@ -145,7 +145,7 @@ async function catalogHandler({ type, id, extra }) {
     return { metas };
 }
 
-// ============ 5. معالج الميتا (تجميع الحلقات من داخل حاوية المواسم للموقع) ============
+// ============ 5. معالج الميتا (تجميع الحلقات ديناميكياً من نفس الصفحة) ============
 async function metaHandler({ type, id }) {
     if (!id.startsWith('as_')) return { meta: {} };
     try {
@@ -160,31 +160,28 @@ async function metaHandler({ type, id }) {
 
         if (poster) poster = poster.replace(/https?:\/\/[^/]+/g, BASE_URL);
 
-        // تنظيف اسم المسلسل الرئيسي المعروض في الأعلى ليكون البوستر جميلاً
         let cleanName = name.replace(/الحلقة\s+\d+/g, '').replace(/والأخيرة/g, '').replace(/حلقة\s+\d+/g, '').replace(/\s+-\s+$/g, '').trim();
 
         const meta = { id, type, name: cleanName, poster, background: poster, description, genres: ["عرب سيد"] };
         $('.Genre a, .genres a').each((i, el) => meta.genres.push($(el).text().trim()));
 
-        // --- محرك التجميع الأسطوري من الصندوق المدمج لعرب سيد ---
         if (type === 'series') {
             const videos = [];
             
-            // السيلكتور الجديد والقاطع لقراءة شبكة "الحلقات والمواسم" الظاهرة بالفيديو
+            // قراءة أزرار الحلقات من المجلد المدمج داخل صفحة عرب سيد الفعالة
             const epSelectors = '.EpisodesList a, .episodes-list a, .EpsList a, .Sub_EpsList a, .post_episodes a, ul.episodes-list li a, .episodes__grid a';
             
             $(epSelectors).each((i, el) => {
                 const epUrl = $(el).attr('href');
                 const epTitle = $(el).text().trim() || `الحلقة ${i + 1}`;
                 if (epUrl && epUrl.startsWith('http')) {
-                    // استخراج رقم الحلقة الفعلي لتنظيم الترتيب في شاشة ستريميو
                     const epMatch = epTitle.match(/(\d+)/);
                     const epNumber = epMatch ? parseInt(epMatch[1]) : (i + 1);
 
                     videos.push({
                         id: 'as_' + Buffer.from(epUrl).toString('base64url'),
                         title: epTitle.includes("الحلقة") ? epTitle : `الحلقة ${epTitle}`,
-                        season: 1, // تثبيت الموسم الأول لدمجها معاً في مسار واحد
+                        season: 1, 
                         episode: epNumber,
                         released: new Date(Date.now() - (i * 60000)).toISOString()
                     });
@@ -192,7 +189,6 @@ async function metaHandler({ type, id }) {
             });
 
             if (videos.length > 0) {
-                // تصفية أي تكرار برمجياً وترتيب الحلقات تصاعدياً من 1 إلى الأخيرة
                 const uniqueVideos = [];
                 const seenEps = new Set();
                 videos.reverse().forEach(v => {
@@ -203,7 +199,6 @@ async function metaHandler({ type, id }) {
                 });
                 meta.videos = uniqueVideos.sort((a, b) => a.episode - b.episode);
             } else {
-                // حالة طوارئ احتياطية: إذا لم يعثر على الصندوق، يدرج الصفحة الحالية كحلقة رقم 1 داخل المجلد
                 meta.videos = [{
                     id: id,
                     title: name,
@@ -214,9 +209,7 @@ async function metaHandler({ type, id }) {
             }
         }
         return { meta };
-    } catch (err) {
-        return { meta: {} };
-    }
+    } catch (err) { return { meta: {} }; }
 }
 
 // ============ 6. معالج البث والمصادر المباشرة ============
