@@ -8,6 +8,7 @@ const VIPER_SOLVER_URL = "https://test-1-eight-zeta.vercel.app/solve";
 const GOOGLE_PROXY_URL = "https://script.google.com/macros/s/AKfycbwzwsaeYrNMVo39ot5D2ah72SWsN1NaKa-_0yagRowbZNnByWwBiu94mO6mAUjwVGhSrQ/exec";
 const BASE_URL = "https://m.asd.ink";
 
+// ضبط المسارات بدقة طبقاً للهندسة الأصلية لمنع تكرار الحلقات
 const CATALOG_MAP = {
     "as_arabic_movies": "/category/arabic-movies-6/",
     "as_foreign_movies": "/category/foreign-movies-6/",
@@ -18,9 +19,11 @@ const CATALOG_MAP = {
     "as_dubbed_movies": "/category/%d8%a7%d9%81%d9%84%d8%a7%d9%85-%d9%85%d8%af%d8%a8%d9%84%d8%ac%d8%a9-1/",
     "as_animation_movies": "/category/%d8%a7%d9%81%d9%84%d8%a7%d9%85-%d8%a7%d9%86%d9%8a%d9%85%d9%8a%d8%b4%d9%86/",
     "as_wrestling": "/category/wwe-shows/",
-    "as_plays": "/category/%d9%85%d8%b3%d8%b1%d8%ad%d9%8a%d8%a7%d8%aa-%d8%b9%d8%b1%d8%a8%d9%8a/",
+    "as_plays": "/category/%d9%85%d8%b3%d8%b1%d8%ad%d9%8a%d8%a7%d8%aa-%d8%b9%d8%b1%d8%a8%d9%8ي/",
+    
+    // إجبار أقسام المسلسلات على دخول المجلدات الرئيسية النظيفة للمسلسلات كلياً
     "as_arabic_series": "/category/arabic-series-6/",
-    "as_egyptian_series": "/category/%d9%85%d8%b3%d9%84%d8%b3%d9%84%d8%a7%d8%aa-%d9%85%d8%b5%d8%b1%d9%8a%d9%87/",
+    "as_egyptian_series": "/category/%d9%85%d8%b3%d9%84%d8%b3%d9%84%d8%a7%d8%aa-%d9%85%d8%b5%d8%b1%d9%8a%d9%8ه/",
     "as_foreign_series": "/category/foreign-series-3/",
     "as_netflix_series": "/category/netfilx/%d9%85%d8%b3%d9%84%d8%b3%d9%84%d8%a7%d8%aa-netfilx-1/",
     "as_turkish_series": "/category/turkish-series-2/",
@@ -32,16 +35,16 @@ const CATALOG_MAP = {
     "as_ramadan_2025": "/category/%d9%85%d8%b3%d9%84%d8%b3%d9%84%d8%a7%d8%aa-%d8%b1%d9%85%d8%b6%d8%a7%d9%86/ramadan-series-2025/"
 };
 
-// ============ 2. الـ Manifest الرسمي القياسي الثابت ============
+// ============ 2. الـ Manifest الـ Premium الموحد ============
 const manifest = {
-    id: "org.dexworld.arabseed.premium.max.v7", // تصفير كاش ستريميو إجبارياً الحين
-    name: "ArabSeed Premium Max v7 - Test",
-    version: "7.0.0",
-    description: "تجميع المسلسلات القسري بالسيليكتور الموحد وحاوية مواسم عرب سيد المستقرة",
+    id: "org.dexworld.arabseed.premium.max.v8", // هدم كاش ستريميو القديم بالكامل لبناء الهيكلية الجديدة
+    name: "ArabSeed Premium Max v8 - Test",
+    version: "8.0.0",
+    description: "تجميع فوري ومطلق للمسلسلات بالدمج القياسي المستقر لملف سورس عرب سيد الأصلي",
     logo: "https://m.asd.ink/wp-content/uploads/2023/01/cropped-Untitled-1-1-192x192.png",
     resources: ["catalog", "meta", "stream"],
     types: ["movie", "series"],
-    idPrefixes: ["tt", "as_"], // العودة للمعرفات القياسية لعدم تضارب ستريميو
+    idPrefixes: ["tt", "as_"],
     catalogs: [
         { type: "movie", id: "as_arabic_movies", name: "عرب سيد - أفلام عربية", extra: [{ name: "search", isRequired: false }, { name: "skip", isRequired: false }] },
         { type: "movie", id: "as_foreign_movies", name: "عرب سيد - أفلام أجنبية", extra: [{ name: "search", isRequired: false }, { name: "skip", isRequired: false }] },
@@ -78,7 +81,7 @@ async function getHtmlSmartly(action, targetUrl = '', searchQuery = '') {
         });
         if (response.ok) {
             const data = await response.json();
-            if (data && data.html && !data.html.includes("Just a moment...") && data.html.length > 5000) {
+            if (data && data.html && !data.html.includes("Just a moment...") && data.html.length > 3000) {
                 return data.html;
             }
         }
@@ -93,7 +96,7 @@ async function getHtmlSmartly(action, targetUrl = '', searchQuery = '') {
         if (response.ok) {
             const buffer = await response.arrayBuffer();
             const text = new TextDecoder('utf-8').decode(buffer);
-            if (text && !text.includes("Just a moment...") && text.length > 5000) {
+            if (text && !text.includes("Just a moment...") && text.length > 3000) {
                 return text;
             }
         }
@@ -101,7 +104,7 @@ async function getHtmlSmartly(action, targetUrl = '', searchQuery = '') {
     return null;
 }
 
-// دالة لتطهير العناوين ودمج الحلقات في الكتالوج الرئيسي قسرياً
+// دالة تنظيف وتوحيد أسماء المسلسلات لمنع التكرار قسرياً في الواجهة
 function cleanSeriesTitle(title) {
     return title.replace(/الحلقة\s+\d+/g, '')
                 .replace(/والأخيرة/g, '')
@@ -114,7 +117,7 @@ function cleanSeriesTitle(title) {
                 .trim();
 }
 
-// ============ 4. معالج الكتالوجات (قفل الحلقات المكررة قسرياً) ============
+// ============ 4. معالج الكتالوجات (قفل التكرار تماماً) ============
 async function catalogHandler({ type, id, extra }) {
     const skip = parseInt(extra.skip) || 0;
     const search = extra.search || '';
@@ -128,12 +131,12 @@ async function catalogHandler({ type, id, extra }) {
 
     const $ = cheerio.load(htmlData);
     const metas = [];
-    const seenSeries = new Set();
+    const seenSeries = new Set(); // ذاكرة منع التكرار
 
-    $('.MovieBlock, .Block--Item, article, .Small--Box, .movie__block, .post-list, a.movie__block').each((i, el) => {
+    $('.MovieBlock, .Block--Item, article, .Small--Box, .movie__block, .post-list, a.movie__block, article.post').each((i, el) => {
         const $el = $(el);
         let link = $el.attr('href') || $el.find('a').first().attr('href');
-        let title = $el.attr('title') || $el.find('h3, h4, .BlockTitle, .Title, p').first().text().trim() || $el.find('img').first().attr('alt');
+        let title = $el.find('.post__info h3, h3, h4, .BlockTitle, .Title, .entry-title').first().text().trim() || $el.attr('title') || $el.find('img').first().attr('alt');
         let poster = $el.find('img').first().attr('data-src') || $el.find('img').first().attr('src');
 
         if (link && title) {
@@ -147,13 +150,13 @@ async function catalogHandler({ type, id, extra }) {
 
             if (isSeriesItem) {
                 const cleanName = cleanSeriesTitle(title);
-                if (seenSeries.has(cleanName)) return; // كبح التكرار نهائياً في الواجهة الزرقاء لستريميو
+                if (seenSeries.has(cleanName)) return; // كبح وإخفاء أي حلقة مكررة من الشاشة الرئيسية
                 seenSeries.add(cleanName);
 
                 metas.push({
-                    id: 'as_' + Buffer.from(link).toString('base64url'), // المعرف قياسي وصافي لتجنب تعارض النظام
+                    id: 'as_' + Buffer.from(link).toString('base64url'),
                     type: "series",
-                    name: cleanName, // الاسم الموحد النظيف بدون أرقام الحلقات
+                    name: cleanName,
                     poster: poster || '',
                     posterShape: 'poster'
                 });
@@ -172,7 +175,7 @@ async function catalogHandler({ type, id, extra }) {
     return { metas };
 }
 
-// ============ 5. معالج الميتا (استخراج شبكة الحلقات والمواسم بالكامل) ============
+// ============ 5. معالج الميتا (توليد مصفوفة الحلقات المجمعة الفاخرة) ============
 async function metaHandler({ type, id }) {
     if (!id.startsWith('as_')) return { meta: {} };
     try {
@@ -181,33 +184,33 @@ async function metaHandler({ type, id }) {
         if (!htmlData) return { meta: {} };
 
         const $ = cheerio.load(htmlData);
-        let name = $('h1').first().text().trim() || $('title').text().trim();
-        let poster = $('.Poster img, .single-thumb img, .movie-poster img').first().attr('src') || $('.post__image img').first().attr('data-src');
-        const description = $('.descrip, .StoryLine, .story').first().text().trim();
+        let name = $('.post__title h1').text().trim() || $('h1').first().text().trim() || $('title').text().trim();
+        let poster = $('.poster__single img, .Poster img, .single-thumb img').first().attr('src') || $('.poster__single img, .post__image img').first().attr('data-src');
+        const description = $('.story__text, .descrip, .StoryLine').first().text().trim();
 
         if (poster) poster = poster.replace(/https?:\/\/[^/]+/g, BASE_URL);
 
         let cleanName = cleanSeriesTitle(name);
 
-        const meta = { id, type, name: cleanName, poster, background: poster, description, genres: ["عرب سيد"] };
+        const meta = { id, type, name: cleanName, poster, background: poster, description: description || `مسلسل ${cleanName}`, genres: ["عرب سيد"] };
         $('.Genre a, .genres a').each((i, el) => meta.genres.push($(el).text().trim()));
 
         if (type === 'series') {
             const videos = [];
             
-            // قراءة أزرار الحلقات والمواسم من داخل الصفحة مباشرة
-            const epSelectors = '.EpisodesList a, .episodes-list a, .EpsList a, .Sub_EpsList a, .post_episodes a, ul.episodes-list li a, .episodes__grid a';
+            // قراءة أزرار الحلقات والمواسم من داخل صندوق صفحة عرب سيد الأصلية
+            const epSelectors = '.episodes__list a, .seasons__list a, .EpisodesList a, .episodes-list a, .EpsList a, .episodes__grid a';
             
             $(epSelectors).each((i, el) => {
                 const epUrl = $(el).attr('href');
                 let epTitle = $(el).text().trim() || `الحلقة ${i + 1}`;
-                if (epUrl && epUrl.startsWith('http')) {
+                if (epUrl) {
                     const epMatch = epTitle.match(/(\d+)/);
                     const epNumber = epMatch ? parseInt(epMatch[1]) : (i + 1);
 
                     videos.push({
                         id: 'as_' + Buffer.from(epUrl).toString('base64url'),
-                        title: epTitle.includes("الحلقة") ? epTitle : `الحلقة ${epTitle}`,
+                        title: `الحلقة ${epNumber}`,
                         season: 1, 
                         episode: epNumber,
                         released: new Date(Date.now() - (i * 60000)).toISOString()
@@ -226,7 +229,6 @@ async function metaHandler({ type, id }) {
                 });
                 meta.videos = uniqueVideos.sort((a, b) => a.episode - b.episode);
             } else {
-                // إذا لم يجد أزرار (صفحة مستقلة)، يعرضها كحلقة أولى منفردة داخل المسلسل لضمان التشغيل
                 meta.videos = [{
                     id: id,
                     title: name,
@@ -259,7 +261,7 @@ async function streamHandler({ type, id }) {
             if (!searchHtml) return { streams: [] };
             
             const $s = cheerio.load(searchHtml);
-            let targetPageUrl = $s('.MovieBlock a, .Block--Item a, article a, .movie__block a, a.movie__block').first().attr('href');
+            let targetPageUrl = $s('.movie__block a, .MovieBlock a, .Block--Item a, article a').first().attr('href');
             if (!targetPageUrl) return { streams: [] };
 
             watchUrl = targetPageUrl.endsWith('/watch/') ? targetPageUrl : targetPageUrl.replace(/\/$/, '') + '/watch/';
