@@ -18,7 +18,7 @@ const CATALOG_MAP = {
     "as_dubbed_movies": "/category/%d8%a7%d9%81%d9%84%d8%a7%d9%85-%d9%85%d8%af%d8%a8%d9%84%d8%ac%d8%a9-1/",
     "as_animation_movies": "/category/%d8%a7%d9%81%d9%84%d8%a7%d9%85-%d8%a7%d9%86%d9%8a%d9%85%d9%8a%d8%b4%d9%86/",
     "as_wrestling": "/category/wwe-shows/",
-    "as_plays": "/category/%d9%85%d8%b3%d8%b1%d8%ad%d9%8a%d8%a7%d8%aa-%d8%b9%d8%b1%d8%a8%d9%8ي/",
+    "as_plays": "/category/%d9%85%d8%b3%d8%b1%d8%ad%d9%8a%d8%a7%d8%aa-%d8%b9%d8%b1%d8%a8%d9%8a/",
     "as_arabic_series": "/category/arabic-series-6/",
     "as_egyptian_series": "/category/%d9%85%d8%b3%d9%84%d8%b3%d9%84%d8%a7%d8%aa-%d9%85%d8%b5%d8%b1%d9%8a%d9%87/",
     "as_foreign_series": "/category/foreign-series-3/",
@@ -32,16 +32,16 @@ const CATALOG_MAP = {
     "as_ramadan_2025": "/category/%d9%85%d8%b3%d9%84%d8%b3%d9%84%d8%a7%d8%aa-%d8%b1%d9%85%d8%b6%d8%a7%d9%86/ramadan-series-2025/"
 };
 
-// ============ 2. الـ Manifest الـ Premium المطور لـ ريبو 3 ============
+// ============ 2. الـ Manifest الرسمي القياسي الثابت ============
 const manifest = {
-    id: "org.dexworld.arabseed.premium.max.v6", // تصفير كاش ستريميو بالكامل لمنع التضارب
-    name: "ArabSeed Premium Max v6 - Test",
-    version: "6.0.0",
-    description: "إصلاح فوري لظهور الكتالوجات مع ميزة فرد الحلقات الديناميكية وسيرفر ViperTLS السريع",
+    id: "org.dexworld.arabseed.premium.max.v7", // تصفير كاش ستريميو إجبارياً الحين
+    name: "ArabSeed Premium Max v7 - Test",
+    version: "7.0.0",
+    description: "تجميع المسلسلات القسري بالسيليكتور الموحد وحاوية مواسم عرب سيد المستقرة",
     logo: "https://m.asd.ink/wp-content/uploads/2023/01/cropped-Untitled-1-1-192x192.png",
     resources: ["catalog", "meta", "stream"],
     types: ["movie", "series"],
-    idPrefixes: ["tt", "as_"],
+    idPrefixes: ["tt", "as_"], // العودة للمعرفات القياسية لعدم تضارب ستريميو
     catalogs: [
         { type: "movie", id: "as_arabic_movies", name: "عرب سيد - أفلام عربية", extra: [{ name: "search", isRequired: false }, { name: "skip", isRequired: false }] },
         { type: "movie", id: "as_foreign_movies", name: "عرب سيد - أفلام أجنبية", extra: [{ name: "search", isRequired: false }, { name: "skip", isRequired: false }] },
@@ -63,7 +63,7 @@ const manifest = {
 
 const builder = new addonBuilder(manifest);
 
-// ============ 3. محرك الجلب الذكي الهجين السحابي (مصلح ومفتوح الأمان الحين) ============
+// ============ 3. محرك الجلب الذكي الهجين السحابي ============
 async function getHtmlSmartly(action, targetUrl = '', searchQuery = '') {
     let finalTargetUrl = targetUrl;
     if (action === 'search') {
@@ -78,7 +78,6 @@ async function getHtmlSmartly(action, targetUrl = '', searchQuery = '') {
         });
         if (response.ok) {
             const data = await response.json();
-            // إصلاح الشرط: نضمن فقط وجود نص حقيقي من السيرفر لبث الكتالوجات بدون حظر
             if (data && data.html && !data.html.includes("Just a moment...") && data.html.length > 5000) {
                 return data.html;
             }
@@ -102,7 +101,20 @@ async function getHtmlSmartly(action, targetUrl = '', searchQuery = '') {
     return null;
 }
 
-// ============ 4. معالج الكتالوجات القياسي المستقر ============
+// دالة لتطهير العناوين ودمج الحلقات في الكتالوج الرئيسي قسرياً
+function cleanSeriesTitle(title) {
+    return title.replace(/الحلقة\s+\d+/g, '')
+                .replace(/والأخيرة/g, '')
+                .replace(/حلقة\s+\d+/g, '')
+                .replace(/الموسم\s+\d+/g, '')
+                .replace(/موسم\s+\d+/g, '')
+                .replace(/كامل/g, '')
+                .replace(/\s+-\s+$/g, '')
+                .replace(/\s+/g, ' ')
+                .trim();
+}
+
+// ============ 4. معالج الكتالوجات (قفل الحلقات المكررة قسرياً) ============
 async function catalogHandler({ type, id, extra }) {
     const skip = parseInt(extra.skip) || 0;
     const search = extra.search || '';
@@ -116,6 +128,7 @@ async function catalogHandler({ type, id, extra }) {
 
     const $ = cheerio.load(htmlData);
     const metas = [];
+    const seenSeries = new Set();
 
     $('.MovieBlock, .Block--Item, article, .Small--Box, .movie__block, .post-list, a.movie__block').each((i, el) => {
         const $el = $(el);
@@ -132,20 +145,34 @@ async function catalogHandler({ type, id, extra }) {
 
             let isSeriesItem = type === "series" || id.includes("series") || title.includes("مسلسل") || title.includes("الحلقة") || title.includes("حلقة");
 
-            metas.push({
-                id: 'as_' + Buffer.from(link).toString('base64url'),
-                type: isSeriesItem ? "series" : "movie",
-                name: title,
-                poster: poster || '',
-                posterShape: 'poster'
-            });
+            if (isSeriesItem) {
+                const cleanName = cleanSeriesTitle(title);
+                if (seenSeries.has(cleanName)) return; // كبح التكرار نهائياً في الواجهة الزرقاء لستريميو
+                seenSeries.add(cleanName);
+
+                metas.push({
+                    id: 'as_' + Buffer.from(link).toString('base64url'), // المعرف قياسي وصافي لتجنب تعارض النظام
+                    type: "series",
+                    name: cleanName, // الاسم الموحد النظيف بدون أرقام الحلقات
+                    poster: poster || '',
+                    posterShape: 'poster'
+                });
+            } else {
+                metas.push({
+                    id: 'as_' + Buffer.from(link).toString('base64url'),
+                    type: "movie",
+                    name: title,
+                    poster: poster || '',
+                    posterShape: 'poster'
+                });
+            }
         }
     });
 
     return { metas };
 }
 
-// ============ 5. معالج الميتا (تجميع الحلقات ديناميكياً من نفس الصفحة) ============
+// ============ 5. معالج الميتا (استخراج شبكة الحلقات والمواسم بالكامل) ============
 async function metaHandler({ type, id }) {
     if (!id.startsWith('as_')) return { meta: {} };
     try {
@@ -160,7 +187,7 @@ async function metaHandler({ type, id }) {
 
         if (poster) poster = poster.replace(/https?:\/\/[^/]+/g, BASE_URL);
 
-        let cleanName = name.replace(/الحلقة\s+\d+/g, '').replace(/والأخيرة/g, '').replace(/حلقة\s+\d+/g, '').replace(/\s+-\s+$/g, '').trim();
+        let cleanName = cleanSeriesTitle(name);
 
         const meta = { id, type, name: cleanName, poster, background: poster, description, genres: ["عرب سيد"] };
         $('.Genre a, .genres a').each((i, el) => meta.genres.push($(el).text().trim()));
@@ -168,12 +195,12 @@ async function metaHandler({ type, id }) {
         if (type === 'series') {
             const videos = [];
             
-            // قراءة أزرار الحلقات من المجلد المدمج داخل صفحة عرب سيد الفعالة
+            // قراءة أزرار الحلقات والمواسم من داخل الصفحة مباشرة
             const epSelectors = '.EpisodesList a, .episodes-list a, .EpsList a, .Sub_EpsList a, .post_episodes a, ul.episodes-list li a, .episodes__grid a';
             
             $(epSelectors).each((i, el) => {
                 const epUrl = $(el).attr('href');
-                const epTitle = $(el).text().trim() || `الحلقة ${i + 1}`;
+                let epTitle = $(el).text().trim() || `الحلقة ${i + 1}`;
                 if (epUrl && epUrl.startsWith('http')) {
                     const epMatch = epTitle.match(/(\d+)/);
                     const epNumber = epMatch ? parseInt(epMatch[1]) : (i + 1);
@@ -199,6 +226,7 @@ async function metaHandler({ type, id }) {
                 });
                 meta.videos = uniqueVideos.sort((a, b) => a.episode - b.episode);
             } else {
+                // إذا لم يجد أزرار (صفحة مستقلة)، يعرضها كحلقة أولى منفردة داخل المسلسل لضمان التشغيل
                 meta.videos = [{
                     id: id,
                     title: name,
