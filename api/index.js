@@ -3,7 +3,7 @@ const { addonBuilder } = require("stremio-addon-sdk");
 const cheerio = require("cheerio");
 const querystring = require("querystring");
 
-// ============ 1. الإعدادات السحابية ورابط ViperTLS المحصن ============
+// ============ 1. الإعدادات السحابية المحصنة ============
 const VIPER_SOLVER_URL = "https://test-1-eight-zeta.vercel.app/solve"; 
 const GOOGLE_PROXY_URL = "https://script.google.com/macros/s/AKfycbwzwsaeYrNMVo39ot5D2ah72SWsN1NaKa-_0yagRowbZNnByWwBiu94mO6mAUjwVGhSrQ/exec";
 const BASE_URL = "https://m.asd.ink";
@@ -32,16 +32,16 @@ const CATALOG_MAP = {
     "as_ramadan_2025": "/category/%d9%85%d8%b3%d9%84%d8%b3%d9%84%d8%a7%d8%aa-%d8%b1%d9%85%d8%b6%d8%a7%d9%86/ramadan-series-2025/"
 };
 
-// ============ 2. الـ Manifest المحدث بالكامل ============
+// ============ 2. الـ Manifest الـ Premium المطور لـ ريبو 3 ============
 const manifest = {
-    id: "org.dexworld.arabseed.premium.max.v4", // تغيير الـ ID لتصفير كاش ستريميو إجبارياً
-    name: "ArabSeed Premium Max v4 - Test",
-    version: "4.0.0",
-    description: "التجميع القسري للمسلسلات ببوسترات موحدة موثوقة ونظام الكشط العكسي المطور",
+    id: "org.dexworld.arabseed.premium.max.v5", // تصفير كاش ستريميو بالكامل
+    name: "ArabSeed Premium Max v5 - Test",
+    version: "5.0.0",
+    description: "نظام تجميع الحلقات الديناميكي الذكي من داخل حاوية العرض لعرب سيد بتزوير بصمة ViperTLS",
     logo: "https://m.asd.ink/wp-content/uploads/2023/01/cropped-Untitled-1-1-192x192.png",
     resources: ["catalog", "meta", "stream"],
     types: ["movie", "series"],
-    idPrefixes: ["tt", "as_", "asSeries_"],
+    idPrefixes: ["tt", "as_"],
     catalogs: [
         { type: "movie", id: "as_arabic_movies", name: "عرب سيد - أفلام عربية", extra: [{ name: "search", isRequired: false }, { name: "skip", isRequired: false }] },
         { type: "movie", id: "as_foreign_movies", name: "عرب سيد - أفلام أجنبية", extra: [{ name: "search", isRequired: false }, { name: "skip", isRequired: false }] },
@@ -78,7 +78,7 @@ async function getHtmlSmartly(action, targetUrl = '', searchQuery = '') {
         });
         if (response.ok) {
             const data = await response.json();
-            if (data && data.html && !data.html.includes("Just a moment...") && (data.html.includes("movie__block") || data.html.includes("EpisodesList"))) {
+            if (data && data.html && !data.html.includes("Just a moment...")) {
                 return data.html;
             }
         }
@@ -93,7 +93,7 @@ async function getHtmlSmartly(action, targetUrl = '', searchQuery = '') {
         if (response.ok) {
             const buffer = await response.arrayBuffer();
             const text = new TextDecoder('utf-8').decode(buffer);
-            if (text && !text.includes("Just a moment...") && (text.includes("movie__block") || text.includes("EpisodesList"))) {
+            if (text && !text.includes("Just a moment...")) {
                 return text;
             }
         }
@@ -101,20 +101,7 @@ async function getHtmlSmartly(action, targetUrl = '', searchQuery = '') {
     return null;
 }
 
-// دالة لتطهير العناوين ودمج المواسم والحلقات قسرياً في بوستر واحد
-function cleanSeriesTitle(title) {
-    return title.replace(/الحلقة\s+\d+/g, '')
-                .replace(/والأخيرة/g, '')
-                .replace(/حلقة\s+\d+/g, '')
-                .replace(/الموسم\s+\d+/g, '')
-                .replace(/موسم\s+\d+/g, '')
-                .replace(/كامل/g, '')
-                .replace(/\s+-\s+$/g, '')
-                .replace(/\s+/g, ' ')
-                .trim();
-}
-
-// ============ 4. معالج الكتالوجات (قفل التكرار نهائياً) ============
+// ============ 4. معالج الكتالوجات القياسي المستقر ============
 async function catalogHandler({ type, id, extra }) {
     const skip = parseInt(extra.skip) || 0;
     const search = extra.search || '';
@@ -128,7 +115,6 @@ async function catalogHandler({ type, id, extra }) {
 
     const $ = cheerio.load(htmlData);
     const metas = [];
-    const seenSeries = new Set();
 
     $('.MovieBlock, .Block--Item, article, .Small--Box, .movie__block, .post-list, a.movie__block').each((i, el) => {
         const $el = $(el);
@@ -143,108 +129,94 @@ async function catalogHandler({ type, id, extra }) {
                 poster = poster.replace(/https?:\/\/[^/]+/g, BASE_URL);
             }
 
-            // التحقق القسري الشامل إذا كان العمل ينتمي للمسلسلات
-            if (type === "series" || id.includes("series") || title.includes("مسلسل") || title.includes("الحلقة") || title.includes("حلقة")) {
-                const cleanName = cleanSeriesTitle(title);
-                if (seenSeries.has(cleanName)) return; 
-                seenSeries.add(cleanName);
+            // إجبار الكتالوج على منح الحلقات نوع مسلسل "series" لتفعيل قائمة التشغيل المجمعة داخلها
+            let isSeriesItem = type === "series" || id.includes("series") || title.includes("مسلسل") || title.includes("الحلقة") || title.includes("حلقة");
 
-                metas.push({
-                    id: 'asSeries_' + Buffer.from(cleanName).toString('base64url'),
-                    type: "series",
-                    name: cleanName,
-                    poster: poster || '',
-                    posterShape: 'poster'
-                });
-            } else {
-                metas.push({
-                    id: 'as_' + Buffer.from(link).toString('base64url'),
-                    type: "movie",
-                    name: title,
-                    poster: poster || '',
-                    posterShape: 'poster'
-                });
-            }
+            metas.push({
+                id: 'as_' + Buffer.from(link).toString('base64url'),
+                type: isSeriesItem ? "series" : "movie",
+                name: title,
+                poster: poster || '',
+                posterShape: 'poster'
+            });
         }
     });
 
     return { metas };
 }
 
-// ============ 5. معالج الميتا (البحث العكسي وتوليد الحلقات) ============
+// ============ 5. معالج الميتا (تجميع الحلقات من داخل حاوية المواسم للموقع) ============
 async function metaHandler({ type, id }) {
-    if (id.startsWith('as_')) {
-        try {
-            const pageUrl = Buffer.from(id.replace('as_', ''), 'base64url').toString();
-            const htmlData = await getHtmlSmartly('get_links', pageUrl);
-            if (!htmlData) return { meta: {} };
-            const $ = cheerio.load(htmlData);
-            const name = $('h1').first().text().trim() || $('title').text().trim();
-            let poster = $('.Poster img, .single-thumb img, .movie-poster img').first().attr('src') || $('.post__image img').first().attr('data-src');
-            const description = $('.descrip, .StoryLine, .story').first().text().trim();
-            if (poster) poster = poster.replace(/https?:\/\/[^/]+/g, BASE_URL);
-            return { meta: { id, type: "movie", name, poster, background: poster, description, genres: ["عرب سيد"] } };
-        } catch (e) { return { meta: {} }; }
-    }
+    if (!id.startsWith('as_')) return { meta: {} };
+    try {
+        const pageUrl = Buffer.from(id.replace('as_', ''), 'base64url').toString();
+        const htmlData = await getHtmlSmartly('get_links', pageUrl);
+        if (!htmlData) return { meta: {} };
 
-    if (id.startsWith('asSeries_')) {
-        try {
-            const seriesName = Buffer.from(id.replace('asSeries_', ''), 'base64url').toString();
-            const searchHtml = await getHtmlSmartly('search', '', seriesName);
-            if (!searchHtml) return { meta: { id, type: "series", name: seriesName, videos: [] } };
+        const $ = cheerio.load(htmlData);
+        let name = $('h1').first().text().trim() || $('title').text().trim();
+        let poster = $('.Poster img, .single-thumb img, .movie-poster img').first().attr('src') || $('.post__image img').first().attr('data-src');
+        const description = $('.descrip, .StoryLine, .story').first().text().trim();
 
-            const $s = cheerio.load(searchHtml);
+        if (poster) poster = poster.replace(/https?:\/\/[^/]+/g, BASE_URL);
+
+        // تنظيف اسم المسلسل الرئيسي المعروض في الأعلى ليكون البوستر جميلاً
+        let cleanName = name.replace(/الحلقة\s+\d+/g, '').replace(/والأخيرة/g, '').replace(/حلقة\s+\d+/g, '').replace(/\s+-\s+$/g, '').trim();
+
+        const meta = { id, type, name: cleanName, poster, background: poster, description, genres: ["عرب سيد"] };
+        $('.Genre a, .genres a').each((i, el) => meta.genres.push($(el).text().trim()));
+
+        // --- محرك التجميع الأسطوري من الصندوق المدمج لعرب سيد ---
+        if (type === 'series') {
             const videos = [];
-            let mainPoster = "";
-
-            $s('.MovieBlock, .Block--Item, article, .movie__block, a.movie__block').each((i, el) => {
-                const $el = $(el);
-                let link = $el.attr('href') || $el.find('a').first().attr('href');
-                let epTitle = $el.attr('title') || $el.find('h3, h4, .Title, p').first().text().trim();
-                let img = $el.find('img').first().attr('data-src') || $el.find('img').first().attr('src');
-
-                if (link && epTitle) {
-                    if (!link.startsWith('http')) link = new URL(link, BASE_URL).href;
-                    if (!mainPoster && img) {
-                        mainPoster = img.replace(/https?:\/\/[^/]+/g, BASE_URL);
-                    }
-
-                    const epMatch = epTitle.match(/الحلقة\s+(\d+)/) || epTitle.match(/حلقة\s+(\d+)/);
+            
+            // السيلكتور الجديد والقاطع لقراءة شبكة "الحلقات والمواسم" الظاهرة بالفيديو
+            const epSelectors = '.EpisodesList a, .episodes-list a, .EpsList a, .Sub_EpsList a, .post_episodes a, ul.episodes-list li a, .episodes__grid a';
+            
+            $(epSelectors).each((i, el) => {
+                const epUrl = $(el).attr('href');
+                const epTitle = $(el).text().trim() || `الحلقة ${i + 1}`;
+                if (epUrl && epUrl.startsWith('http')) {
+                    // استخراج رقم الحلقة الفعلي لتنظيم الترتيب في شاشة ستريميو
+                    const epMatch = epTitle.match(/(\d+)/);
                     const epNumber = epMatch ? parseInt(epMatch[1]) : (i + 1);
 
-                    const seasonMatch = epTitle.match(/الموسم\s+(\d+)/) || epTitle.match(/موسم\s+(\d+)/);
-                    const seasonNumber = seasonMatch ? parseInt(seasonMatch[1]) : 1;
-
                     videos.push({
-                        id: 'as_' + Buffer.from(link).toString('base64url'),
-                        title: epTitle,
-                        season: seasonNumber,
+                        id: 'as_' + Buffer.from(epUrl).toString('base64url'),
+                        title: epTitle.includes("الحلقة") ? epTitle : `الحلقة ${epTitle}`,
+                        season: 1, // تثبيت الموسم الأول لدمجها معاً في مسار واحد
                         episode: epNumber,
                         released: new Date(Date.now() - (i * 60000)).toISOString()
                     });
                 }
             });
 
-            videos.sort((a, b) => (a.season - b.season) || (a.episode - b.episode));
-
-            return {
-                meta: {
+            if (videos.length > 0) {
+                // تصفية أي تكرار برمجياً وترتيب الحلقات تصاعدياً من 1 إلى الأخيرة
+                const uniqueVideos = [];
+                const seenEps = new Set();
+                videos.reverse().forEach(v => {
+                    if (!seenEps.has(v.episode)) {
+                        seenEps.add(v.episode);
+                        uniqueVideos.push(v);
+                    }
+                });
+                meta.videos = uniqueVideos.sort((a, b) => a.episode - b.episode);
+            } else {
+                // حالة طوارئ احتياطية: إذا لم يعثر على الصندوق، يدرج الصفحة الحالية كحلقة رقم 1 داخل المجلد
+                meta.videos = [{
                     id: id,
-                    type: "series",
-                    name: seriesName,
-                    poster: mainPoster,
-                    background: mainPoster,
-                    description: `مسلسل ${seriesName} مجمع بالكامل من عرب سيد.`,
-                    posterShape: "poster",
-                    videos: videos
-                }
-            };
-        } catch (err) {
-            return { meta: { id, type: "series", name: "مسلسل مجمع", videos: [] } };
+                    title: name,
+                    season: 1,
+                    episode: 1,
+                    released: new Date().toISOString()
+                }];
+            }
         }
+        return { meta };
+    } catch (err) {
+        return { meta: {} };
     }
-
-    return { meta: {} };
 }
 
 // ============ 6. معالج البث والمصادر المباشرة ============
@@ -352,7 +324,6 @@ builder.defineStreamHandler(streamHandler);
 
 const addonInterface = builder.getInterface();
 
-// ============ 7. الراوتر القياسي الشامل المصلح لمنع تضارب الحزم والمواسم ============
 export default async function handler(req, res) {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Headers', '*');
@@ -361,41 +332,30 @@ export default async function handler(req, res) {
     if (req.method === 'OPTIONS') return res.status(200).end();
 
     const url = req.url;
-    
-    // 1. المانيفست الرسمي
     if (url === '/' || url === '/manifest.json') {
         return res.status(200).json(addonInterface.manifest);
     }
 
-    // 2. راوتر الكتالوجات القياسي
     const catalogMatch = url.match(/^\/catalog\/([^/]+)\/([^/]+)(?:\/(.+))?\.json$/);
     if (catalogMatch) {
-        try {
-            const [, type, id, extraStr] = catalogMatch;
-            const extra = extraStr ? querystring.parse(extraStr) : {};
-            const result = await catalogHandler({ type, id, extra });
-            return res.status(200).json(result);
-        } catch (e) { return res.status(200).json({ metas: [] }); }
+        const [, type, id, extraStr] = catalogMatch;
+        const extra = extraStr ? querystring.parse(extraStr) : {};
+        const result = await catalogHandler({ type, id, extra });
+        return res.status(200).json(result);
     }
 
-    // 3. راوتر الميتا المصلح - يطابق تفكيك قرمزي ويمنع الانهيار للنوع المدمج
     const metaMatch = url.match(/^\/meta\/([^/]+)\/(.+)\.json$/);
     if (metaMatch) {
-        try {
-            const [, type, id] = metaMatch;
-            const result = await metaHandler({ type, id: decodeURIComponent(id) });
-            return res.status(200).json(result);
-        } catch (e) { return res.status(200).json({ meta: {} }); }
+        const [, type, id] = metaMatch;
+        const result = await metaHandler({ type, id: decodeURIComponent(id) });
+        return res.status(200).json(result);
     }
 
-    // 4. راوتر مصادر البث
     const streamMatch = url.match(/^\/stream\/([^/]+)\/(.+)\.json$/);
     if (streamMatch) {
-        try {
-            const [, type, id] = streamMatch;
-            const result = await streamHandler({ type, id: decodeURIComponent(id) });
-            return res.status(200).json(result);
-        } catch (e) { return res.status(200).json({ streams: [] }); }
+        const [, type, id] = streamMatch;
+        const result = await streamHandler({ type, id: decodeURIComponent(id) });
+        return res.status(200).json(result);
     }
 
     return res.status(404).json({ error: 'Not found' });
