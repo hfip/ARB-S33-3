@@ -19,26 +19,26 @@ const CATALOG_MAP = {
     "as_dubbed_movies": "/category/%d8%a7%d9%81%d9%84%d8%a7%d9%85-%d9%85%d8%af%d8%a8%d9%84%d8%ac%d8%a9-1/",
     "as_animation_movies": "/category/animation-movies/",
     "as_wrestling": "/category/wwe-shows/",
-    "as_plays": "/category/%d9%85%d8%b3%d8%b1%d8%ad%d9%8a%d8%a7%d8%aa-%d8%b9%d8%b1%d8%a8%d9%8ي/",
+    "as_plays": "/category/%d9%85%d8%b3%d8%b1%d8%ad%d9%8a%d8%a7%d8%aa-%d8%b9%d8%b1%d8%a8%d9%8a/",
     "as_arabic_series": "/category/arabic-series-14/",
     "as_egyptian_series": "/category/%D9%85%D8%B3%D9%84%D8%B3%D9%84%D8%A7%D8%AA-%D9%85%D8%B5%D8%B1%D9%8A%D9%8ه/",
     "as_foreign_series": "/category/foreign-series-7/",
     "as_netflix_series": "/category/netflix/netflix-series/",
     "as_turkish_series": "/category/turkish-series-2/",
-    "as_indian_series": "/category/%D9%85%D8%B3%D9%84%D8%B3%D9%84%D8%A7%D8%AA-%D9%8%D9%86%D8%AF%D9%8A%D8%A9/",
-    "as_korean_series": "/category/%D9%85%D8%B3%D9%84%0%D9%8A%D9%8f%D9%88%D8%b1%d9%8a%d9%8eh/", 
+    "as_indian_series": "/category/%D9%85%D8%B3%D9%84%D8%B3%D9%84%D8%A7%D8%AA-%D9%87%D9%86%D8%AF%D9%8A%D8%A9/",
+    "as_korean_series": "/category/%D9%85%D8%B3%D9%84%D8%B3%D9%84%D8%A7%D8%AA-%D9%8A%D9%8f%D9%88%D8%b1%d9%8a%d9%8eh/", 
     "as_dubbed_series": "/category/dubbed-series/",
     "as_cartoon_series": "/category/cartoon-series/",
-    "as_tv_shows": "/category/%D8%A8%D8%B1%D8%A7%D9%85%D8%ac-%D8%AA%D9%84%D9%81%D8%B2%D9%8a%D9%88%D9%86%D9%8a%D8%A9/",
+    "as_tv_shows": "/category/%D8%A8%D8%B1%D8%A7%D9%85%D8%ac-%D8%AA%D9%84%D9%81%D8%B2%D9%8ي%D9%88%D9%86%D9%8a%D8%A9/",
     "as_ramadan_2025": "/category/%d9%85%d8%b3%d9%84%d8%b3%d9%84%d8%a7%d8%aa-%d8%b1%d9%85%d8%b6%d8%a7%d9%86/ramadan-series-2025/"
 };
 
 // ============ 2. الـ Manifest الـ Premium الموحد المستقر ============
 const manifest = {
-    id: "org.dexworld.arabseed.premium.max.v14",
-    name: "ArabSeed Premium Max v14 - Final",
-    version: "14.0.0",
-    description: "تجميع وتطهير فائق للعناوين مع تحديث كامل الروابط وتفعيل مصادر البث بـ ViperTLS",
+    id: "org.dexworld.arabseed.premium.max.v15", // تصفير الكاش الصلب لتنفيذ التحديثات فوراً
+    name: "ArabSeed Premium Max v15 - Ultra Final",
+    version: "15.0.0",
+    description: "حل نهائي لعناوين مجمع المسلسلات وتنشيط مصادر البث لجميع الأقسام بـ ViperTLS",
     logo: "https://m.asd.ink/wp-content/uploads/2023/01/cropped-Untitled-1-1-192x192.png",
     resources: ["catalog", "meta", "stream"],
     types: ["movie", "series"],
@@ -80,7 +80,7 @@ async function getHtmlSmartly(action, targetUrl = '', searchQuery = '') {
         });
         if (response.ok) {
             const data = await response.json();
-            if (data && data.html && !data.html.includes("Just a moment...") && data.html.length > 2000) {
+            if (data && data.html && !data.html.includes("Just a moment...") && data.html.length > 1500) {
                 return data.html;
             }
         }
@@ -95,7 +95,7 @@ async function getHtmlSmartly(action, targetUrl = '', searchQuery = '') {
         if (response.ok) {
             const buffer = await response.arrayBuffer();
             const text = new TextDecoder('utf-8').decode(buffer);
-            if (text && !text.includes("Just a moment...") && text.length > 2000) {
+            if (text && !text.includes("Just a moment...") && text.length > 1500) {
                 return text;
             }
         }
@@ -108,13 +108,13 @@ function cleanSeriesTitle(title) {
     if (!title) return "";
     let cleaned = title.trim();
     
-    cleaned = cleaned.replace(/(الحلقة|حلقة|الموسم|موسم|الموسم\s+الأول|الموسم\s+الثاني|الموسم\s+الثالث|الموسم\s+الرابع|الموسم\s+الخامس|الموسم\s+العاشر|العاشرة|والأخيرة|كامل|مترجم|مدبلج|بجودة|عالية|اون\s+لاين).*/g, '');
+    cleaned = cleaned.replace(/(الحلقة|حلقة|الموسم|موم|موسم|الموسم\s+الأول|الموسم\s+الثاني|الموسم\s+الثالث|الموسم\s+الرابع|الموسم\s+الخامس|الموسم\s+العاشر|العاشرة|والأخيرة|كامل|مترجم|مدبلج|بجودة|عالية|اون\s+لاين).*/g, '');
     cleaned = cleaned.replace(/^(مسلسل|فيلم|flem|فلم|أفلام|افلام)\s+/g, '');
     
     return cleaned.replace(/\s+-\s+$/g, '').replace(/\s+/g, ' ').trim();
 }
 
-// ============ 4. معالج الكتالوجات (قفل التكرار وتطهير أسماء البوسترات) ============
+// ============ 4. معالج الكتالوجات (قفل التكرار وفتح كافة القوائم بالكامل) ============
 async function catalogHandler({ type, id, extra }) {
     const skip = parseInt(extra.skip) || 0;
     const search = extra.search || '';
@@ -143,6 +143,7 @@ async function catalogHandler({ type, id, extra }) {
                 poster = poster.replace(/https?:\/\/[^/]+/g, BASE_URL);
             }
 
+            // الاعتماد القاطع على هويّة القسم (id) وليس النص لمنع اختفاء المسلسلات الأجنبية والتركية والآسيوية
             let isSeriesItem = type === "series" || id.includes("series") || id.includes("shows") || title.includes("مسلسل") || title.includes("الحلقة") || title.includes("حلقة");
 
             if (isSeriesItem) {
@@ -251,7 +252,12 @@ async function getDirectLinks(idOrImdb, type) {
 
         if (finalId.startsWith('as_')) {
             const pageUrl = Buffer.from(finalId.replace('as_', ''), 'base64url').toString();
-            watchUrl = pageUrl.endsWith('/watch/') ? pageUrl : pageUrl.replace(/\/$/, '') + '/watch/';
+            // إصلاح الـ Watch URL الذكي: إذا كان الرابط مخصصاً لحلقة داخلية لا نقوم بقصه قسرياً لمنع الـ 404 واختفاء الروابط
+            if (pageUrl.includes('/ep/') || pageUrl.includes('/episode/')) {
+                watchUrl = pageUrl;
+            } else {
+                watchUrl = pageUrl.endsWith('/watch/') ? pageUrl : pageUrl.replace(/\/$/, '') + '/watch/';
+            }
         } 
         else if (finalId.startsWith('tt')) {
             const metaResponse = await fetch(`https://v3-cinemeta.stremio.com/meta/${type}/${finalId}.json`);
