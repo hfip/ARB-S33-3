@@ -15,7 +15,7 @@ const CATALOG_MAP = {
     "as_indian_movies": "/category/indian-movies/",
     "as_asian_movies": "/category/asian-movies/",
     "as_turkish_movies": "/category/turkish-movies/",
-    "as_dubbed_movies": "/category/%d8%a7%d9%81%d9%84%d8%a7%d9%85-%d9%85%d8%af%d8%a8%d9%84%d8%ac%d8%a9-1/",
+    "as_dubbed_movies": "/category/%d8%a7%d9%81%d9%84%d8%a7%d9%85-%d9%85%d8%af%d8%a8%d9%8بلجية-1/",
     "as_animation_movies": "/category/%d8%a7%d9%81%d9%84%d8%a7%d9%85-%d8%a7%d9%86%d9%8a%d9%85%d9%8a%d8%b4%d9%86/",
     "as_wrestling": "/category/wwe-shows/",
     "as_plays": "/category/%d9%85%d8%b3%d8%b1%d8%ad%d9%8a%d8%a7%d8%aa-%d8%b9%d8%b1%d8%a8%d9%8ي/",
@@ -25,7 +25,7 @@ const CATALOG_MAP = {
     "as_netflix_series": "/category/netfilx/%d9%85%d8%b3%d9%84%d8%b3%d9%84%d8%a7%d8%aa-netfilx-1/",
     "as_turkish_series": "/category/turkish-series-2/",
     "as_indian_series": "/category/%d9%85%d8%b3%d9%84%d8%b3%d9%84%d8%a7%d8%aa-%d9%8e%d9%86%d8%af%d9%8a%d8%a9/",
-    "as_korean_series": "/category/%d9%85%d8%b3%d9%84%d8%b3%d9%84%d8%a7%d8%aa-%d9%8ي%d9%8f%d9%88%d8%b1%d9%8a%d9%8eh/",
+    "as_korean_series": "/category/%d9%85%d8%b3%d9%84%d8%b3%d9%84%d8%a7%d8%aa-%d9%8a%d9%8f%d9%88%d8%b1%d9%8a%d9%8eh/",
     "as_dubbed_series": "/category/%d9%85%d8%b3%d9%84%d8%b3%d9%84%d8%a7%d8%aa-%d9%85%d8%af%d8%a8%d9%84%d8%ac%d8%a9/",
     "as_cartoon_series": "/category/cartoon-series/",
     "as_tv_shows": "/category/%d8%a8%d8%b1%d8%a7%d9%85%d8%ac-%d8%aa%d9%84%d9%81%d8%b2%d9%8a%d9%88%d9%86%d9%8a%d8%a9/",
@@ -34,10 +34,10 @@ const CATALOG_MAP = {
 
 // ============ 2. الـ Manifest الـ Premium الموحد الأخير ============
 const manifest = {
-    id: "org.dexworld.arabseed.premium.max.v11", // تصفير كاش البرنامج قسرياً لتطبيق التغييرات الجوهرية الحين
-    name: "ArabSeed Premium Max v11 - Test",
-    version: "11.0.0",
-    description: "إصلاح فوري لعناوين مجمع المسلسلات وتنشيط مصادر البث الحصرية لفك تشفير المشغلات",
+    id: "org.dexworld.arabseed.premium.max.v12", // تصفير كاش البرنامج قسرياً لتطبيق التغييرات الحالية
+    name: "ArabSeed Premium Max v12 - Ultra",
+    version: "12.0.0",
+    description: "تجميع قسري وعناوين موحدة مع تفعيل مصادر بث الحلقات والمشغلات بـ ViperTLS",
     logo: "https://m.asd.ink/wp-content/uploads/2023/01/cropped-Untitled-1-1-192x192.png",
     resources: ["catalog", "meta", "stream"],
     types: ["movie", "series"],
@@ -101,27 +101,15 @@ async function getHtmlSmartly(action, targetUrl = '', searchQuery = '') {
     return null;
 }
 
-// دالة تنظيف العناوين الفائقة لقص الحلقات والأرقام المركبة والمكتوبة نصوصاً بالكامل
+// دالة التطهير الصارمة القائمة على التعبيرات النمطية (Regex) لقطع أي كلمة تدل على حلقة ورقمها نهائياً
 function cleanSeriesTitle(title) {
     if (!title) return "";
-    return title.replace(/الحلقة\s+\d+/g, '')
-                .replace(/والأخيرة/g, '')
-                .replace(/حلقة\s+\d+/g, '')
-                .replace(/الموسم\s+\d+/g, '')
-                .replace(/موسم\s+\d+/g, '')
-                .replace(/العاشرة/g, '')
-                .replace(/الأول/g, '')
-                .replace(/الثاني/g, '')
-                .replace(/الثالث/g, '')
-                .replace(/الرابع/g, '')
-                .replace(/الخامس/g, '')
-                .replace(/كامل/g, '')
-                .replace(/\s+-\s+$/g, '')
-                .replace(/\s+/g, ' ')
-                .trim();
+    // قص كل شيء يبدأ من كلمة الحلقة، حلقة، الموسم، موسم، وما يلحقها من أرقام أو كلمات وصفية
+    let cleaned = title.replace(/(الحلقة|حلقة|الموسم|موسم|الموسم\s+الأول|الموسم\s+الثاني|الموسم\s+الثالث|الموسم\s+الرابع|الموسم\s+الخامس|الموسم\s+العاشر|العاشرة|والأخيرة|كامل|مترجم|مدبلج|بجودة|عالية|اون\s+لاين).*/g, '');
+    return cleaned.replace(/\s+-\s+$/g, '').replace(/\s+/g, ' ').trim();
 }
 
-// ============ 4. معالج الكتالوجات (تصفية ومنع تكرار الواجهة) ============
+// ============ 4. معالج الكتالوجات (قفل التكرار في الواجهة) ============
 async function catalogHandler({ type, id, extra }) {
     const skip = parseInt(extra.skip) || 0;
     const search = extra.search || '';
@@ -194,7 +182,7 @@ async function metaHandler({ type, id }) {
 
         if (poster) poster = poster.replace(/https?:\/\/[^/]+/g, BASE_URL);
 
-        // تفعيل التطهير الفائق لإصلاح الاسم العلوي في شاشة العرض ليكون اسم المسلسل صافي الحين
+        // تشغيل ميزة التطهير الصارم لقص العبارات الملحقة في العنوان العلوي للمسلسل
         let cleanName = cleanSeriesTitle(name);
 
         const meta = { id, type, name: cleanName, poster, background: poster, description: description || `مسلسل ${cleanName}`, genres: ["عرب سيد"] };
@@ -245,13 +233,13 @@ async function metaHandler({ type, id }) {
     } catch (err) { return { meta: {} }; }
 }
 
-// ============ 6. محرك سحب البث وتفكيك التشفير المباشر بـ ViperTLS ============
+// ============ 6. محرك فك تشفير مصادر البث عبر السيرفر السحابي ============
 async function getDirectLinks(idOrImdb, type) {
     const streams = [];
     try {
         let watchUrl = "";
 
-        // جلب وتفكيك الحلقات المحلية فورا بدون المرور بـ Cinemeta العالمي
+        // فك تشفير المعرفات المحلية وجلب رابطها الصافي فورا
         if (idOrImdb.startsWith('as_')) {
             const pageUrl = Buffer.from(idOrImdb.replace('as_', ''), 'base64url').toString();
             watchUrl = pageUrl.endsWith('/watch/') ? pageUrl : pageUrl.replace(/\/$/, '') + '/watch/';
@@ -384,11 +372,15 @@ export default async function handler(req, res) {
         return res.status(200).json(result);
     }
 
-    // إصلاح تمرير المعرف كاملاً بالبادئة الصريحة لفك التشفير وتنشيط مصادر البث الحصرية لفك المشغلات الحين
+    // إصلاح راوتر البث الشامل لتأمين استلام المعرف كاملاً بالبادئة الصريحة لتشغيل مصادر البث الحصرية
     const streamMatch = url.match(/^\/stream\/([^/]+)\/(.+)\.json$/);
     if (streamMatch) {
         const [, type, encodedId] = streamMatch;
-        const fullId = decodeURIComponent(encodedId); 
+        // سحب المعرّف كاملاً وتفكيكه صراحة لتنشيط محرك فك التشفير السحابي الحين
+        let fullId = decodeURIComponent(encodedId);
+        if (!fullId.startsWith('as_') && !fullId.startsWith('tt') && fullId.includes('as_')) {
+            fullId = fullId.substring(fullId.indexOf('as_'));
+        }
         const result = await getDirectLinks(fullId, type);
         return res.status(200).json({ streams: result });
     }
