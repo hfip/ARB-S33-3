@@ -8,6 +8,7 @@ const VIPER_SOLVER_URL = "https://test-1-eight-zeta.vercel.app/solve";
 const GOOGLE_PROXY_URL = "https://script.google.com/macros/s/AKfycbwzwsaeYrNMVo39ot5D2ah72SWsN1NaKa-_0yagRowbZNnByWwBiu94mO6mAUjwVGhSrQ/exec";
 const BASE_URL = "https://m.asd.ink";
 
+// تحديث وتصحيح كامل روابط الأقسام طبقاً لأحدث بنية تابعة للموقع لفتح كافة الكتالوجات
 const CATALOG_MAP = {
     "as_arabic_movies": "/category/arabic-movies-6/",
     "as_foreign_movies": "/category/foreign-movies-6/",
@@ -15,12 +16,14 @@ const CATALOG_MAP = {
     "as_indian_movies": "/category/indian-movies/",
     "as_asian_movies": "/category/asian-movies/",
     "as_turkish_movies": "/category/turkish-movies/",
-    "as_dubbed_movies": "/category/%d8%a7%d9%81%d9%84%d8%a7%d9%85-%d9%85%d8%af%d8%a8%d9%8بلجية-1/",
+    "as_dubbed_movies": "/category/%d8%a7%d9%81%d9%84%d8%a7%d9%85-%d9%85%d8%af%d8%a8%d9%84%d8%ac%d8%a9-1/",
     "as_animation_movies": "/category/%d8%a7%d9%81%d9%84%d8%a7%d9%85-%d8%a7%d9%86%d9%8a%d9%85%d9%8a%d8%b4%d9%86/",
     "as_wrestling": "/category/wwe-shows/",
-    "as_plays": "/category/%d9%85%d8%b3%d8%b1%d8%ad%d9%8a%d8%a7%d8%aa-%d8%b9%d8%b1%d8%a8%d9%8ي/",
+    "as_plays": "/category/%d9%85%d8%b3%d8%b1%d8%ad%d9%8a%d8%a7%d8%aa-%d8%b9%d8%b1%d8%a8%d9%8a/",
+    
+    // إصلاح المسارات والمجلدات المشفرة لتدفق مسلسلات (المصرية، الهندية، والآسيوية) بالكامل
     "as_arabic_series": "/category/arabic-series-6/",
-    "as_egyptian_series": "/category/%d9%85%d8%b3%d9%84%d8%b3%d9%84%d8%a7%d8%aa-%d9%85%d8%b5%d8%b1%d9%8a%d9%8ه/",
+    "as_egyptian_series": "/category/%d9%85%d8%b3%d9%84%d8%b3%d9%84%d8%a7%d8%aa-%d9%85%d8%b5%d8%b1%d9%8a%d9%87/",
     "as_foreign_series": "/category/foreign-series-3/",
     "as_netflix_series": "/category/netfilx/%d9%85%d8%b3%d9%84%d8%b3%d9%84%d8%a7%d8%aa-netfilx-1/",
     "as_turkish_series": "/category/turkish-series-2/",
@@ -32,12 +35,12 @@ const CATALOG_MAP = {
     "as_ramadan_2025": "/category/%d9%85%d8%b3%d9%84%d8%b3%d9%84%d8%a7%d8%aa-%d8%b1%d9%85%d8%b6%d8%a7%d9%86/ramadan-series-2025/"
 };
 
-// ============ 2. الـ Manifest الـ Premium الموحد الأخير ============
+// ============ 2. الـ Manifest الـ Premium الموحد المستقر ============
 const manifest = {
-    id: "org.dexworld.arabseed.premium.max.v12", // تصفير كاش البرنامج قسرياً لتطبيق التغييرات الحالية
-    name: "ArabSeed Premium Max v12 - Ultra",
-    version: "12.0.0",
-    description: "تجميع قسري وعناوين موحدة مع تفعيل مصادر بث الحلقات والمشغلات بـ ViperTLS",
+    id: "org.dexworld.arabseed.premium.max.v13", // تصفير كاش البرنامج بالكامل لإقلاع النسخة القياسية
+    name: "ArabSeed Premium Max v13 - Final",
+    version: "13.0.0",
+    description: "تجميع قسري وتطهير كامل للعناوين مع فتح كافة الأقسام وتفعيل مصادر البث عبر ViperTLS",
     logo: "https://m.asd.ink/wp-content/uploads/2023/01/cropped-Untitled-1-1-192x192.png",
     resources: ["catalog", "meta", "stream"],
     types: ["movie", "series"],
@@ -101,15 +104,21 @@ async function getHtmlSmartly(action, targetUrl = '', searchQuery = '') {
     return null;
 }
 
-// دالة التطهير الصارمة القائمة على التعبيرات النمطية (Regex) لقطع أي كلمة تدل على حلقة ورقمها نهائياً
+// دالة التطهير الفائقة المطورة لحذف كلمات (مسلسل، فيلم، فلم، الحلقة) وأرقامها من بداية العناوين تماماً لتأتي صافية
 function cleanSeriesTitle(title) {
     if (!title) return "";
-    // قص كل شيء يبدأ من كلمة الحلقة، حلقة، الموسم، موسم، وما يلحقها من أرقام أو كلمات وصفية
-    let cleaned = title.replace(/(الحلقة|حلقة|الموسم|موسم|الموسم\s+الأول|الموسم\s+الثاني|الموسم\s+الثالث|الموسم\s+الرابع|الموسم\s+الخامس|الموسم\s+العاشر|العاشرة|والأخيرة|كامل|مترجم|مدبلج|بجودة|عالية|اون\s+لاين).*/g, '');
+    let cleaned = title.trim();
+    
+    // 1. إزالة لواحق الحلقات والمواسم والتفاصيل الزائدة الممتدة لنهاية النص
+    cleaned = cleaned.replace(/(الحلقة|حلقة|الموسم|موسم|الموسم\s+الأول|الموسم\s+الثاني|الموسم\s+الثالث|الموسم\s+الرابع|الموسم\s+الخامس|الموسم\s+العاشر|العاشرة|والأخيرة|كامل|مترجم|مدبلج|بجودة|عالية|اون\s+لاين).*/g, '');
+    
+    // 2. إصلاح وفص كلمات البدايات (مسلسل / فيلم / فلم) لتطهير واجهة البوستر بالكامل الحين
+    cleaned = cleaned.replace(/^(مسلسل|فيلم|فلم|أفلام|افلام)\s+/g, '');
+    
     return cleaned.replace(/\s+-\s+$/g, '').replace(/\s+/g, ' ').trim();
 }
 
-// ============ 4. معالج الكتالوجات (قفل التكرار في الواجهة) ============
+// ============ 4. معالج الكتالوجات (قفل التكرار وتطهير أسماء البوسترات) ============
 async function catalogHandler({ type, id, extra }) {
     const skip = parseInt(extra.skip) || 0;
     const search = extra.search || '';
@@ -148,15 +157,16 @@ async function catalogHandler({ type, id, extra }) {
                 metas.push({
                     id: 'as_' + Buffer.from(link).toString('base64url'),
                     type: "series",
-                    name: cleanName, 
+                    name: cleanName, // حقن الاسم المطهر بدون كلمة (مسلسل)
                     poster: poster || '',
                     posterShape: 'poster'
                 });
             } else {
+                let cleanMovieName = cleanSeriesTitle(title); // تنظيف اسم الفيلم من كلمة (فيلم / فلم)
                 metas.push({
                     id: 'as_' + Buffer.from(link).toString('base64url'),
                     type: "movie",
-                    name: title,
+                    name: cleanMovieName,
                     poster: poster || '',
                     posterShape: 'poster'
                 });
@@ -182,7 +192,6 @@ async function metaHandler({ type, id }) {
 
         if (poster) poster = poster.replace(/https?:\/\/[^/]+/g, BASE_URL);
 
-        // تشغيل ميزة التطهير الصارم لقص العبارات الملحقة في العنوان العلوي للمسلسل
         let cleanName = cleanSeriesTitle(name);
 
         const meta = { id, type, name: cleanName, poster, background: poster, description: description || `مسلسل ${cleanName}`, genres: ["عرب سيد"] };
@@ -233,19 +242,24 @@ async function metaHandler({ type, id }) {
     } catch (err) { return { meta: {} }; }
 }
 
-// ============ 6. محرك فك تشفير مصادر البث عبر السيرفر السحابي ============
+// ============ 6. محرك سحب البث وتفكيك التشفير المباشر بـ ViperTLS ============
 async function getDirectLinks(idOrImdb, type) {
     const streams = [];
     try {
         let watchUrl = "";
 
-        // فك تشفير المعرفات المحلية وجلب رابطها الصافي فورا
-        if (idOrImdb.startsWith('as_')) {
-            const pageUrl = Buffer.from(idOrImdb.replace('as_', ''), 'base64url').toString();
+        // فك تشفير المعرفات المحلية وحقن البادئات لإصلاح بث المسلسلات قطعيّاً الحين
+        let finalId = idOrImdb;
+        if (!finalId.startsWith('as_') && !finalId.startsWith('tt')) {
+            finalId = 'as_' + finalId;
+        }
+
+        if (finalId.startsWith('as_')) {
+            const pageUrl = Buffer.from(finalId.replace('as_', ''), 'base64url').toString();
             watchUrl = pageUrl.endsWith('/watch/') ? pageUrl : pageUrl.replace(/\/$/, '') + '/watch/';
         } 
-        else if (idOrImdb.startsWith('tt')) {
-            const metaResponse = await fetch(`https://v3-cinemeta.stremio.com/meta/${type}/${idOrImdb}.json`);
+        else if (finalId.startsWith('tt')) {
+            const metaResponse = await fetch(`https://v3-cinemeta.stremio.com/meta/${type}/${finalId}.json`);
             const metaData = await metaResponse.json();
             const mediaTitle = metaData.meta ? metaData.meta.name : "";
             if (!mediaTitle) return [];
@@ -258,8 +272,6 @@ async function getDirectLinks(idOrImdb, type) {
             if (!targetPageUrl) return [];
 
             watchUrl = targetPageUrl.endsWith('/watch/') ? targetPageUrl : targetPageUrl.replace(/\/$/, '') + '/watch/';
-        } else {
-            return [];
         }
 
         const watchHtml = await getHtmlSmartly('get_links', watchUrl);
@@ -372,12 +384,11 @@ export default async function handler(req, res) {
         return res.status(200).json(result);
     }
 
-    // إصلاح راوتر البث الشامل لتأمين استلام المعرف كاملاً بالبادئة الصريحة لتشغيل مصادر البث الحصرية
     const streamMatch = url.match(/^\/stream\/([^/]+)\/(.+)\.json$/);
     if (streamMatch) {
         const [, type, encodedId] = streamMatch;
-        // سحب المعرّف كاملاً وتفكيكه صراحة لتنشيط محرك فك التشفير السحابي الحين
         let fullId = decodeURIComponent(encodedId);
+        // إصلاح وتوجيه المعرف الممرر بالكامل لتنشيط مصادر البث الخاصة بنا
         if (!fullId.startsWith('as_') && !fullId.startsWith('tt') && fullId.includes('as_')) {
             fullId = fullId.substring(fullId.indexOf('as_'));
         }
