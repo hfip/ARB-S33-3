@@ -8,7 +8,7 @@ const VIPER_SOLVER_URL = "https://test-1-eight-zeta.vercel.app/solve";
 const GOOGLE_PROXY_URL = "https://script.google.com/macros/s/AKfycbwzwsaeYrNMVo39ot5D2ah72SWsN1NaKa-_0yagRowbZNnByWwBiu94mO6mAUjwVGhSrQ/exec";
 const BASE_URL = "https://m.asd.ink";
 
-// خريطة الأقسام الرسمية المحدثة والمطابقة لترميز المتصفح الأصلي لتدفق الكتالوجات كاملة
+// خريطة الأقسام الرسمية والمحدثة بناءً على الدومين الجديد لتدفق البوسترات كاملة وبدون نقص
 const CATALOG_MAP = {
     "as_arabic_movies": "/category/arabic-movies-6/",
     "as_foreign_movies": "/category/foreign-movies-6/",
@@ -19,28 +19,26 @@ const CATALOG_MAP = {
     "as_dubbed_movies": "/category/%D8%A7%D9%81%D9%84%D8%A7%D9%85-%D9%85%D8%AF%D8%A8%D9%84%D8%AC%D8%A9-1/",
     "as_animation_movies": "/category/animation-movies/",
     "as_wrestling": "/category/wwe-shows/",
-    "as_plays": "/category/%D9%85%D8%B3%D8%B1%D8%AD%D9%8A%D8%A7%D8%AA-%D8%B9%D8%B1%D8%A8%D9%8I/",
+    "as_plays": "/category/%D9%85%D8%B3%D8%B1%D8%AD%D9%8A%D8%A7%D8%AA-%D8%B9%D8%B1%D8%A8%D9%8A/",
     
-    // أقسام المسلسلات الكرتونية والتلفزيونية والرمضانية والأجنبية والعربية والمصرية
     "as_arabic_series": "/category/arabic-series-14/",
-    "as_egyptian_series": "/category/%D9%85%D8%B3%D9%84%D8%B3%D9%84%D8%A7%D8%AA-%D9%85%D8%B5%D8%B1%D9%8A%D9%87/",
+    "as_egyptian_series": "/category/%D9%85%D8%B3%D9%84%D8%B3%D9%84%D8%A7%D8%AA-%D9%85%D8%B5%D8%B1%D9%8A%D9%8ه/",
     "as_foreign_series": "/category/foreign-series-7/",
     "as_netflix_series": "/category/netflix/netflix-series/",
     "as_turkish_series": "/category/turkish-series-2/",
-    "as_indian_series": "/category/%D9%85%D8%B3%D9%84%D8%B3%D9%84%D8%A7%D8%AA-%D9%84%D9%86%D8%AF%D9%8A%D8%A9/",
-    "as_korean_series": "/category/%D9%85%D8%B3%D9%84%D8%B3%D9%84%D8%A7%D8%AA-%D9%83%D9%88%D8%B1%D9%8A%D9%87/", 
+    "as_indian_series": "/category/%D9%85%D8%B3%D8%B1%D8%AD%D9%8A%D8%A7%D8%AA-%D9%84%D9%86%D8%AF%D9%8A%D8%A9/",
+    "as_korean_series": "/category/%D9%85%D8%B3%D9%84%D8%B3%D9%84%D8%A7%D8%AA-%D9%82%D9%88%D8%B1%D9%8A%D9%8ه/", 
     "as_dubbed_series": "/category/dubbed-series/",
     "as_cartoon_series": "/category/cartoon-series/",
-    "as_tv_shows": "/category/%D8%A8%D8%B1%D8%A7%D9%85%D8%AC-%D8%AA%D9%84%D9%81%D8%B2%D9%8A%D9%88%D9%86%D9%8A%D8%A9/",
-    "as_ramadan_2025": "/category/%D9%85%D8%B3%D9%84%D8%B3%D9%84%D8%A7%D8%AA-%D8%b1%D9%85%D8%b6%D8%a7%d9%86/ramadan-series-2025/"
+    "as_tv_shows": "/category/%D8%A8%D8%B1%D8%A7%D9%85%D8%ac-%D8%AA%D9%84%D9%81%D8%B2%D9%8A%D9%88%D9%86%D9%8A%D8%A9/",
+    "as_ramadan_2025": "/category/%D9%85%D8%B3%D9%84%D8%B3%D9%84%D8%A7%D8%AA-%D8%b1%D9%85%D8%b6%d8%a7%d9%86/ramadan-series-2025/"
 };
 
-// ============ 2. الـ Manifest الـ Premium الموحد المستقر لستريميو ============
 const manifest = {
-    id: "org.dexworld.arabseed.premium.max.v20", // تصفير كاش ستريميو بالكامل الحين لتفعيل نظام مانوس
-    name: "ArabSeed Premium Max v20 - Manus Fix",
-    version: "20.0.0",
-    description: "إصلاح قاطع لكتالوجات المسلسلات وتتبع روابط الـ selary الرئيسية لجلب كامل الحلقات والمواسم مع البث",
+    id: "org.dexworld.arabseed.premium.max.v21", // تصفير كاش ستريميو بالكامل لمنع التضارب الحين
+    name: "ArabSeed Premium Max v21 - Solid Aggregation",
+    version: "21.0.0",
+    description: "التجميع الحديدي القسري بناءً على الاسم الموحد لغلق ومنع البوسترات المكررة نهائياً مع البث والمشغلات",
     logo: "https://m.asd.ink/wp-content/uploads/2023/01/cropped-Untitled-1-1-192x192.png",
     resources: ["catalog", "meta", "stream"],
     types: ["movie", "series"],
@@ -82,7 +80,7 @@ async function getHtmlSmartly(action, targetUrl = '', searchQuery = '') {
         });
         if (response.ok) {
             const data = await response.json();
-            if (data && data.html && !data.html.includes("Just a moment...") && data.html.length > 1500) {
+            if (data && data.html && !data.html.includes("Just a moment...") && data.html.length > 1000) {
                 return data.html;
             }
         }
@@ -97,7 +95,7 @@ async function getHtmlSmartly(action, targetUrl = '', searchQuery = '') {
         if (response.ok) {
             const buffer = await response.arrayBuffer();
             const text = new TextDecoder('utf-8').decode(buffer);
-            if (text && !text.includes("Just a moment...") && text.length > 1500) {
+            if (text && !text.includes("Just a moment...") && text.length > 1000) {
                 return text;
             }
         }
@@ -105,7 +103,7 @@ async function getHtmlSmartly(action, targetUrl = '', searchQuery = '') {
     return null;
 }
 
-// دالة التطهير الفائقة المطورة لحذف كلمات البدايات والنهايات لبوسترات نظيفة وفخمة
+// دالة التطهير الفائقة المطورة لحذف الكلمات المكررة وقص الزوائد
 function cleanSeriesTitle(title) {
     if (!title) return "";
     let cleaned = title.trim();
@@ -114,23 +112,7 @@ function cleanSeriesTitle(title) {
     return cleaned.replace(/\s+-\s+$/g, '').replace(/\s+/g, ' ').trim();
 }
 
-// دالة تحويل الرابط السحرية المستوحاة من تقرير مانوس للوصول لصفحة المسلسل الكاملة
-function getSeriesMainUrl(url) {
-    if (!url) return url;
-    if (url.includes('/selary/')) return url;
-    
-    // إذا كان رابط حلقة يحتوي على أرقام الحلقة أو الرمز المميز مثل -s1-eps أو -eps
-    if (url.match(/-s\d+-eps\d+/i) || url.match(/-eps\d+/i) || url.includes('%d8%a7%d9%84%d8%ad%d9%84%d9%82%d8%a9')) {
-        let slug = url.replace(BASE_URL + '/', '').replace(/\/$/, '');
-        // حذف أجزاء الحلقة والموسم من نهاية الرابط
-        slug = slug.replace(/-s\d+-eps\d+.*/i, '').replace(/-eps\d+.*/i, '');
-        slug = slug.replace(/-%d8%a7%d9%84%d8%ad%d9%84%d9%82%d9%8a.*/i, ''); 
-        return `${BASE_URL}/selary/${slug}/`;
-    }
-    return url;
-}
-
-// ============ 4. معالج الكتالوجات (تطبيق سيلكتور مانوس الذكي + التحويل لـ selary) ============
+// ============ 4. معالج الكتالوجات (التجميع بالاسم لمنع تكرار الواجهة قطعيّاً الحين) ============
 async function catalogHandler({ type, id, extra }) {
     const skip = parseInt(extra.skip) || 0;
     const search = extra.search || '';
@@ -144,15 +126,15 @@ async function catalogHandler({ type, id, extra }) {
 
     const $ = cheerio.load(htmlData);
     const metas = [];
-    const seenUrls = new Set(); // منع التكرار بناءً على رابط المسلسل الرئيسي الفعلي لمنع النقص
+    const seenSeriesNames = new Set(); // منع التكرار بالاسم الموحد لإغلاق البوسترات المكررة نهائياً
 
-    const selectors = '.Block--Item, article.post, .movie__block, .MovieBlock, .Category--Items .MovieBlock, .Category--Items .Block--Item, a.movie__block';
+    const selectors = 'a.movie__block, .Block--Item, article.post, .movie__block, .MovieBlock, a.episode__item';
     
     $(selectors).each((i, el) => {
         const $el = $(el);
         
         let link = $el.attr('href') || $el.find('a').first().attr('href');
-        let title = $el.attr('title') || $el.find('.post__info h3, h3, h4, .BlockTitle').first().text().trim() || $el.find('img').first().attr('alt');
+        let title = $el.attr('title') || $el.find('.post__info h3, h3, h4, .BlockTitle, .episode__title span').first().text().trim() || $el.find('img').first().attr('alt');
         let poster = $el.find('img').first().attr('data-src') || $el.find('img').first().attr('src');
 
         if (link && title) {
@@ -165,14 +147,14 @@ async function catalogHandler({ type, id, extra }) {
             let isSeriesItem = type === "series" || id.includes("series") || id.includes("shows") || title.includes("مسلسل") || title.includes("الحلقة") || title.includes("حلقة");
 
             if (isSeriesItem) {
-                // تحويل رابط الحلقة إلى رابط المسلسل الرئيسي الكامل (selary)
-                const mainSeriesUrl = getSeriesMainUrl(link);
-                if (seenUrls.has(mainSeriesUrl)) return; 
-                seenUrls.add(mainSeriesUrl);
-
                 const cleanName = cleanSeriesTitle(title);
+                
+                // الحظر المطلق الحين: إذا وجدنا المسلسل مسبقاً بنفس الاسم المطهر نخفيه فوراً من شاشة ستريميو
+                if (seenSeriesNames.has(cleanName)) return; 
+                seenSeriesNames.add(cleanName);
+
                 metas.push({
-                    id: 'as_' + Buffer.from(mainSeriesUrl).toString('base64url'),
+                    id: 'as_' + Buffer.from(link).toString('base64url'),
                     type: "series",
                     name: cleanName, 
                     poster: poster || '',
@@ -194,17 +176,11 @@ async function catalogHandler({ type, id, extra }) {
     return { metas };
 }
 
-// ============ 5. معالج الميتا الذكي (قراءة الحلقات والمواسم من صفحة المسلسل الأصلية) ============
+// ============ 5. معالج الميتا (تجميع وقراءة صندوق الحلقات والمواسم) ============
 async function metaHandler({ type, id }) {
     if (!id.startsWith('as_')) return { meta: {} };
     try {
-        let pageUrl = Buffer.from(id.replace('as_', ''), 'base64url').toString();
-        
-        // إذا لم يكن الرابط يشير لصفحة مسلسل رئيسية، نقوم بتحويله احتياطياً
-        if (type === 'series') {
-            pageUrl = getSeriesMainUrl(pageUrl);
-        }
-
+        const pageUrl = Buffer.from(id.replace('as_', ''), 'base64url').toString();
         const htmlData = await getHtmlSmartly('get_links', pageUrl);
         if (!htmlData) return { meta: {} };
 
@@ -222,7 +198,6 @@ async function metaHandler({ type, id }) {
 
         if (type === 'series') {
             const videos = [];
-            // سيلكتور جلب قائمة الحلقات من داخل صفحة المسلسل الكاملة
             const epSelectors = '.episodes__list a, .seasons__list a, .EpisodesList a, .episodes-list a, .EpsList a, .episodes__grid a, .episodes__list li a';
             
             $(epSelectors).each((i, el) => {
@@ -253,7 +228,6 @@ async function metaHandler({ type, id }) {
                 });
                 meta.videos = uniqueVideos.sort((a, b) => a.episode - b.episode);
             } else {
-                // إذا لم نجد حلقات فرعية، نعتبرها حلقة وحيدة أو صفحة مباشرة
                 meta.videos = [{
                     id: id,
                     title: name,
@@ -267,7 +241,7 @@ async function metaHandler({ type, id }) {
     } catch (err) { return { meta: {} }; }
 }
 
-// ============ 6. محرك فك تشفير البث المباشر المطور وسيرفرات play.php ============
+// ============ 6. محرك سحب البث وتفكيك التشفير المباشر بـ ViperTLS ============
 async function getDirectLinks(idOrImdb, type) {
     const streams = [];
     try {
@@ -388,7 +362,7 @@ const addonInterface = builder.getInterface();
 export default async function handler(req, res) {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Headers', '*');
-    res.setHeader('Content-Type', 'application/utf-8');
+    res.setHeader('Content-Type', 'application/json; charset=utf-8');
 
     if (req.method === 'OPTIONS') return res.status(200).end();
 
