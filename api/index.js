@@ -8,7 +8,7 @@ const VIPER_SOLVER_URL = "https://test-1-eight-zeta.vercel.app/solve";
 const GOOGLE_PROXY_URL = "https://script.google.com/macros/s/AKfycbwzwsaeYrNMVo39ot5D2ah72SWsN1NaKa-_0yagRowbZNnByWwBiu94mO6mAUjwVGhSrQ/exec";
 const BASE_URL = "https://m.asd.ink";
 
-// تثبيت وتطهير خريطة الأقسام بالترميز الحرفي الكبير (UPPERCASE) القطعي لفتح الصفحات بالملي وتدفق البوسترات كاملة
+// حقن وتثبيت روابط الأقسام بالترميز القياسي الصحيح لتدفق البوسترات بالكامل
 const CATALOG_MAP = {
     "as_arabic_movies": "/category/arabic-movies-6/",
     "as_foreign_movies": "/category/foreign-movies-6/",
@@ -19,28 +19,28 @@ const CATALOG_MAP = {
     "as_dubbed_movies": "/category/%D8%A7%D9%81%D9%84%D8%A7%D9%85-%D9%85%D8%AF%D8%A8%D9%84%D8%AC%D8%A9-1/",
     "as_animation_movies": "/category/animation-movies/",
     "as_wrestling": "/category/wwe-shows/",
-    "as_plays": "/category/%D9%85%D8%B3%D8%B1%D8%AD%D9%8A%D8%A7%D8%AA-%D8%B9%D8%B1%D8%A8%D9%8I/",
+    "as_plays": "/category/%D9%85%D8%B3%D8%B1%D8%AD%D9%8A%D8%A7%D8%AA-%D8%B9%D8%B1%D8%A8%D9%8A/",
     
-    // المسارات الرسمية والموزونة لأقسام المسلسلات بالترميز القياسي لعام 2026 من ملف الـ HTML
+    // تصحيح مسارات الأقسام بناءً على سورس الـ HTML لفتح المسلسلات (العربية والمصرية والهندية والآسيوية والأجنبية)
     "as_arabic_series": "/category/arabic-series-14/",
-    "as_egyptian_series": "/category/%D9%85%D8%B3%D9%84%D8%B3%D9%84%D8%A7%D8%AA-%D9%85%D8%B5%D8%B1%D9%8A%D9%87/",
+    "as_egyptian_series": "/category/%D9%85%D8%B3%D9%84%D8%B3%D9%84%D8%A7%D8%AA-%D9%85%D8%B5%D8%B1%D9%8A%D9%8ه/",
     "as_foreign_series": "/category/foreign-series-7/",
     "as_netflix_series": "/category/netflix/netflix-series/",
     "as_turkish_series": "/category/turkish-series-2/",
-    "as_indian_series": "/category/%D9%85%D8%B3%D9%84%D8%B3%D9%84%D8%A7%D8%AA-%D9%87%D9%86%D8%AF%D9%84%D9%8A%D8%A9/",
-    "as_korean_series": "/category/%D9%85%D8%B3%D9%84%D8%B3%D9%84%D8%A7%D8%AA-%D9%8A%D9%8F%D9%88%D8%B1%D9%8A%D9%8eh/", 
+    "as_indian_series": "/category/%D9%85%D8%B3%D9%84%D8%B3%D9%84%D8%A7%D8%AA-%D9%84%D9%87%D9%86%D8%AF%D9%8A%D8%A9/",
+    "as_korean_series": "/category/%D9%85%D8%B3%D9%84%D8%B3%D9%84%D8%A7%D8%AA-%D9%8A%D9%8F%D9%88%D8%B1%D9%8a%D9%8eh/", 
     "as_dubbed_series": "/category/dubbed-series/",
     "as_cartoon_series": "/category/cartoon-series/",
-    "as_tv_shows": "/category/%D8%A8%D8%B1%D8%A7%D9%85%D8%ac-%D8%AA%D9%84%D9%81%D8%B2%D9%8A%D9%88%D9%86%D9%8A%D8%A9/",
+    "as_tv_shows": "/category/%D8%A8%D8%B1%D8%A7%D9%85%D8%ac-%D8%AA%D9%84%D9%81%D8%B2%D9%8a%D9%88%D9%86%D9%8a%D8%A9/",
     "as_ramadan_2025": "/category/%D9%85%D8%B3%D9%84%D8%B3%D9%84%D8%A7%D8%AA-%D8%B1%D9%85%D8%B6%D8%A7%D9%86/ramadan-series-2025/"
 };
 
 // ============ 2. الـ Manifest الموحد لستريميو ============
 const manifest = {
-    id: "org.dexworld.arabseed.premium.max.v17", // تصفير كاش ستريميو إجبارياً لإجبار التطبيق على جلب البيانات الجديدة الحين
-    name: "ArabSeed Premium Max v17 - Catalog Fix",
-    version: "17.0.0",
-    description: "إصلاح شامل وتاريخي لتدفق الكتالوجات والبوسترات كاملة لجميع أقسام المسلسلات والأفلام",
+    id: "org.dexworld.arabseed.premium.max.v18", // تصفير كاش ستريميو بالكامل لإقلاع البنية الجديدة الحين
+    name: "ArabSeed Premium Max v18 - Ultra",
+    version: "18.0.0",
+    description: "تجميع قسري وتفجير الكتالوجات بالسيليكتور الحديث المكتشف من حاوية السورس لعرب سيد",
     logo: "https://m.asd.ink/wp-content/uploads/2023/01/cropped-Untitled-1-1-192x192.png",
     resources: ["catalog", "meta", "stream"],
     types: ["movie", "series"],
@@ -105,18 +105,16 @@ async function getHtmlSmartly(action, targetUrl = '', searchQuery = '') {
     return null;
 }
 
-// دالة التطهير الفائقة المطورة لحذف كلمات البدايات (مسلسل / فيلم / فلم / افلام) تماماً لجعل واجهة العرض صافية
+// دالة التطهير لحذف كلمات البدايات والنهايات لبوسترات نظيفة تماماً
 function cleanSeriesTitle(title) {
     if (!title) return "";
     let cleaned = title.trim();
-    
     cleaned = cleaned.replace(/(الحلقة|حلقة|الموسم|موم|موسم|الموسم\s+الأول|الموسم\s+الثاني|الموسم\s+الثالث|الموسم\s+الرابع|الموسم\s+الخامس|الموسم\s+العاشر|العاشرة|والأخيرة|كامل|مترجم|مدبلج|بجودة|عالية|اون\s+لاين).*/g, '');
     cleaned = cleaned.replace(/^(مسلسل|فيلم|flem|فلم|أفلام|افلام)\s+/g, '');
-    
     return cleaned.replace(/\s+-\s+$/g, '').replace(/\s+/g, ' ').trim();
 }
 
-// ============ 4. معالج الكتالوجات (تفجير وجلب كافة البوسترات بدون نقص) ============
+// ============ 4. معالج الكتالوجات المطور بالسيلكتور الحديث المستخرج من سورس الـ HTML ============
 async function catalogHandler({ type, id, extra }) {
     const skip = parseInt(extra.skip) || 0;
     const search = extra.search || '';
@@ -132,11 +130,13 @@ async function catalogHandler({ type, id, extra }) {
     const metas = [];
     const seenSeries = new Set();
 
-    // السيلكتور الشامل والمحكم لقراءة كل حاويات البوسترات في الصفحة
-    $('.MovieBlock, .Block--Item, article, .Small--Box, .movie__block, .post-list, a.movie__block, article.post, .episodes__list li').each((i, el) => {
+    // حقن السيلكتورات القياسية والحديثة المكتشفة من السورس (a.episode__item) لفتح القوائم بالكامل ومنع النقص
+    $('.MovieBlock, .Block--Item, article, .Small--Box, .movie__block, .post-list, a.movie__block, article.post, a.episode__item, .episodes__list li').each((i, el) => {
         const $el = $(el);
         let link = $el.attr('href') || $el.find('a').first().attr('href');
-        let title = $el.find('.post__info h3, h3, h4, .BlockTitle, .Title, .entry-title').first().text().trim() || $el.attr('title') || $el.find('img').first().attr('part') || $el.find('img').first().attr('alt');
+        
+        // التقاط العنوان بدقة سواء من الكلاس الجديد للمسلسلات الأجنبية والعربية أو القديم للأفلام
+        let title = $el.find('.episode__title span, .post__info h3, h3, h4, .BlockTitle, .Title, .entry-title').first().text().trim() || $el.attr('title') || $el.find('img').first().attr('alt');
         let poster = $el.find('img').first().attr('data-src') || $el.find('img').first().attr('src');
 
         if (link && title) {
@@ -146,7 +146,6 @@ async function catalogHandler({ type, id, extra }) {
                 poster = poster.replace(/https?:\/\/[^/]+/g, BASE_URL);
             }
 
-            // الاعتماد القطعي الصارم الحين على نوع الكتالوج المطلوب (id) لضمان تدفق المسلسلات كاملة 100%
             let isSeriesItem = type === "series" || id.includes("series") || id.includes("shows") || title.includes("مسلسل") || title.includes("الحلقة") || title.includes("حلقة");
 
             if (isSeriesItem) {
@@ -177,7 +176,7 @@ async function catalogHandler({ type, id, extra }) {
     return { metas };
 }
 
-// ============ 5. معالج الميتا (تجميع وقراءة صندوق الحلقات) ============
+// ============ 5. معالج الميتا ============
 async function metaHandler({ type, id }) {
     if (!id.startsWith('as_')) return { meta: {} };
     try {
@@ -242,7 +241,7 @@ async function metaHandler({ type, id }) {
     } catch (err) { return { meta: {} }; }
 }
 
-// ============ 6. محرك سحب البث وتفكيك التشفير المباشر بـ ViperTLS ============
+// ============ 6. محرك سحب البث وتفكيك التشفير بـ ViperTLS ============
 async function getDirectLinks(idOrImdb, type) {
     const streams = [];
     try {
