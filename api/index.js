@@ -130,13 +130,14 @@ async function catalogHandler({ type, id, extra }) {
 
     const $ = cheerio.load(htmlData);
     const metas = [];
-    const seenSeries = new Set();
-
-    $('.MovieBlock, .Block--Item, article, .Small--Box, .movie__block, .post-list, a.movie__block, article.post').each((i, el) => {
+    const seenSeries = new Set();    
+    $('li, article').each(...)
         const $el = $(el);
         let link = $el.attr('href') || $el.find('a').first().attr('href');
         let title = $el.find('.post__info h3, h3, h4, .BlockTitle, .Title, .entry-title').first().text().trim() || $el.attr('title') || $el.find('img').first().attr('alt');
         let poster = $el.find('img').first().attr('data-src') || $el.find('img').first().attr('src');
+    // fallback: og:image من صفحة المقال
+if (!poster) poster = '';
 
         if (link && title) {
             if (!link.startsWith('http')) link = new URL(link, BASE_URL).href;
@@ -186,7 +187,9 @@ async function metaHandler({ type, id }) {
 
         const $ = cheerio.load(htmlData);
         let name = $('.post__title h1').text().trim() || $('h1').first().text().trim() || $('title').text().trim();
-        let poster = $('.poster__single img, .Poster img, .single-thumb img').first().attr('src') || $('.poster__single img, .post__image img').first().attr('data-src');
+        let poster = htmlData.match(/property="og:image"\s+content="([^"]+)"/)?.[1] || 
+             htmlData.match(/content="([^"]+)"\s+property="og:image"/)?.[1] || '';
+
         const description = $('.story__text, .descrip, .StoryLine').first().text().trim();
 
         if (poster) poster = poster.replace(/https?:\/\/[^/]+/g, BASE_URL);
@@ -255,7 +258,8 @@ async function getDirectLinks(idOrImdb, type) {
         if (finalId.startsWith('as_')) {
             const pageUrl = Buffer.from(finalId.replace('as_', ''), 'base64url').toString();
             // إصلاح الـ Watch URL بناءً على سورس الـ HTML: نطلب صفحة الحلقة مباشرة وبدون إضافة كلمة /watch/ لتفادي الـ 404 واختفاء المصادر
-            watchUrl = pageUrl; 
+            watchUrl = pageUrl.replace(/\/$/, '') + '/watch/';
+
         } 
         else if (finalId.startsWith('tt')) {
             const metaResponse = await fetch(`https://v3-cinemeta.stremio.com/meta/${type}/${finalId}.json`);
