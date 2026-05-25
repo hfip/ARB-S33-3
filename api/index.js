@@ -8,7 +8,7 @@ const VIPER_SOLVER_URL = "https://test-1-eight-zeta.vercel.app/solve";
 const GOOGLE_PROXY_URL = "https://script.google.com/macros/s/AKfycbwzwsaeYrNMVo39ot5D2ah72SWsN1NaKa-_0yagRowbZNnByWwBiu94mO6mAUjwVGhSrQ/exec";
 const BASE_URL = "https://m.asd.ink";
 
-// خريطة الأقسام الرسمية لتدفق البوسترات كاملة وبدون تكرار في الواجهة
+// خريطة الأقسام الرسمية لتدفق البوسترات كاملة وبدون تكرار لعام 2026
 const CATALOG_MAP = {
     "as_arabic_movies": "/category/arabic-movies-6/",
     "as_foreign_movies": "/category/foreign-movies-6/",
@@ -26,8 +26,8 @@ const CATALOG_MAP = {
     "as_foreign_series": "/category/foreign-series-7/",
     "as_netflix_series": "/category/netflix/netflix-series/",
     "as_turkish_series": "/category/turkish-series-2/",
-    "as_indian_series": "/category/%D9%85%D8%B3%D9%84%D8%B3%D9%84%D8%A7%D8%AA-%D9%8%D9%86%D8%AF%D9%8A%D8%A9/",
-    "as_korean_series": "/category/%D9%85%D8%B3%D9%84%D8%B3%D9%84%D8%A7%D8%AA-%D9%83%D9%88%D8%B1%D9%8A%D9%87/", 
+    "as_indian_series": "/category/%D9%85%D8%B3%D9%84%D8%B3%D9%84%D8%A7%D8%AA-%D9%87%D9%86%D8%AF%D9%8A%D8%A9/",
+    "as_korean_series": "/category/%D9%85%D8%B3%D9%84%D8%B3%D9%84%D8%A7%D8%AA-%D9%82%D9%88%D8%B1%D9%8A%D9%8ه/", 
     "as_dubbed_series": "/category/dubbed-series/",
     "as_cartoon_series": "/category/cartoon-series/",
     "as_tv_shows": "/category/%D8%A8%D8%B1%D8%A7%D9%85%D8%ac-%D8%AA%D9%84%D9%81%D8%B2%D9%8A%D9%88%D9%86%D9%8A%D8%A9/",
@@ -35,10 +35,10 @@ const CATALOG_MAP = {
 };
 
 const manifest = {
-    id: "org.dexworld.arabseed.premium.max.v24", // تصفير كاش البرنامج قسرياً الحين
-    name: "ArabSeed Premium Max v24 - Universal Master",
-    version: "24.0.0",
-    description: "إصلاح شامل: تجميع حديدي للبوسترات مع دعم جلب مصادر البث للأفلام والمسلسلات من الكتالوجات الخارجية الأخرى بكفاءة",
+    id: "org.dexworld.arabseed.premium.max.v25", // تصفير الكاش إجبارياً لإقلاع النسخة المصلحة للأفلام والكتالوجات
+    name: "ArabSeed Premium Max v25 - Universal Fix",
+    version: "25.0.0",
+    description: "إصلاح قاطع وبث عام للأفلام والمسلسلات من أي كتالوج خارجي مع التجميع التام للواجهة بـ ViperTLS",
     logo: "https://m.asd.ink/wp-content/uploads/2023/01/cropped-Untitled-1-1-192x192.png",
     resources: ["catalog", "meta", "stream"],
     types: ["movie", "series"],
@@ -111,7 +111,7 @@ function cleanSeriesTitle(title) {
     return cleaned.replace(/\s+-\s+$/g, '').replace(/\s+/g, ' ').trim();
 }
 
-// ============ 4. معالج الكتالوجات (التجميع بالاسم لمنع التكرار) ============
+// ============ 4. معالج الكتالوجات (التجميع لمنع التكرار قسرياً) ============
 async function catalogHandler({ type, id, extra }) {
     const skip = parseInt(extra.skip) || 0;
     const search = extra.search || '';
@@ -172,7 +172,7 @@ async function catalogHandler({ type, id, extra }) {
     return { metas };
 }
 
-// ============ 5. معالج الميتا (تجميع وقراءة صندوق الحلقات) ============
+// ============ 5. معالج الميتا (قراءة صندوق الحلقات) ============
 async function metaHandler({ type, id }) {
     if (!id.startsWith('as_')) return { meta: {} };
     try {
@@ -237,24 +237,23 @@ async function metaHandler({ type, id }) {
     } catch (err) { return { meta: {} }; }
 }
 
-// ============ 6. محرك البث المصلح للأفلام والمسلسلات العامة 100% ============
+// ============ 6. محرك البث العام المصلح للأفلام والمسلسلات 100% بدون تشويه ============
 async function getDirectLinks(idOrImdb, type) {
     const streams = [];
     try {
         let watchUrl = "";
-        let finalId = idOrImdb;
 
-        // إذا كان الاستدعاء من الكتالوج المجمع الخاص بنا
-        if (finalId.startsWith('as_')) {
-            watchUrl = Buffer.from(finalId.replace('as_', ''), 'base64url').toString();
+        // أ) إذا كان الطلب قادم من كتالوج عرب سيد المجمّع الخاص بنا
+        if (idOrImdb.startsWith('as_')) {
+            watchUrl = Buffer.from(idOrImdb.replace('as_', ''), 'base64url').toString();
         } 
-        // الحل الشامل والذكي: إذا كان الطلب قادم من أي كتالوج خارجي (Cinemeta / قرمزي إلخ) بـ معرف tt...
-        else if (finalId.startsWith('tt')) {
-            const parts = finalId.split(':');
+        // ب) فكرتك العبقرية: إذا كان الطلب قادم من أي كتالوج خارجي يحمل معرّف tt... الصافي
+        else if (idOrImdb.startsWith('tt')) {
+            const parts = idOrImdb.split(':');
             const imdbId = parts[0];
             const isSeries = type === 'series' || parts.length > 1;
 
-            // جلب اسم المادة الأصلي (باللغة العربية أو الإنجليزية) عبر API سينيميتا العالمي
+            // جلب العناوين عبر API سينيميتا لترجمتها وبدء البحث العكسي
             const metaResponse = await fetch(`https://v3-cinemeta.stremio.com/meta/${type}/${imdbId}.json`);
             const metaData = await metaResponse.json();
             if (!metaData || !metaData.meta) return [];
@@ -262,17 +261,14 @@ async function getDirectLinks(idOrImdb, type) {
             const mediaTitle = metaData.meta.name;
             let searchQuery = mediaTitle;
 
-            // هندسة صياغة البحث العكسي الدقيق للمسلسل
+            // إذا كان العمل مسلسلاً قادماً من كتالوج آخر نقوم بتركيب أرقام الحلقة للبحث
             if (isSeries && parts.length > 2) {
                 const seasonNum = parseInt(parts[1]);
                 const episodeNum = parseInt(parts[2]);
                 searchQuery = `${mediaTitle} الموسم ${seasonNum} الحلقة ${episodeNum}`;
-            } else {
-                // للأفلام الخارجية: نبحث باسم الفيلم مجرداً
-                searchQuery = mediaTitle;
             }
 
-            console.log(`[Universal Search] جاري جلب المصادر لـ (${type}) عن طريق البحث عن: ${searchQuery}`);
+            console.log(`[Universal Linker] جاري البحث العكسي عن المادة: ${searchQuery}`);
             const searchHtml = await getHtmlSmartly('search', '', searchQuery);
             if (!searchHtml) return [];
             
@@ -398,13 +394,17 @@ export default async function handler(req, res) {
         return res.status(200).json(result);
     }
 
+    // إصلاح راوتر البث الشامل المباشر لتمرير معرّفات الـ tt... النظيفة بدون تشويه البادئة
     const streamMatch = url.match(/^\/stream\/([^/]+)\/(.+)\.json$/);
     if (streamMatch) {
         const [, type, encodedId] = streamMatch;
         let fullId = decodeURIComponent(encodedId);
+        
+        // إذا كان المعرف مشوه ويحتوي على بادئتين، نقوم بتصفيته
         if (!fullId.startsWith('as_') && !fullId.startsWith('tt') && fullId.includes('as_')) {
             fullId = fullId.substring(fullId.indexOf('as_'));
         }
+        
         const result = await getDirectLinks(fullId, type);
         return res.status(200).json({ streams: result });
     }
