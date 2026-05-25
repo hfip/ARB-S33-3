@@ -3,7 +3,7 @@ const { addonBuilder } = require("stremio-addon-sdk");
 const cheerio = require("cheerio");
 const querystring = require("querystring");
 
-// ============ 1. الإعدادات السحابية ورابط ViperTLS المحصن ============
+// ============ 1. الإعدادات السحابية ورابط البروكسي و ViperTLS ============
 const VIPER_SOLVER_URL = "https://test-1-eight-zeta.vercel.app/solve"; 
 const GOOGLE_PROXY_URL = "https://script.google.com/macros/s/AKfycbwzwsaeYrNMVo39ot5D2ah72SWsN1NaKa-_0yagRowbZNnByWwBiu94mO6mAUjwVGhSrQ/exec";
 const BASE_URL = "https://m.asd.ink";
@@ -26,7 +26,7 @@ const CATALOG_MAP = {
     "as_foreign_series": "/category/foreign-series-7/",
     "as_netflix_series": "/category/netflix/netflix-series/",
     "as_turkish_series": "/category/turkish-series-2/",
-    "as_indian_series": "/category/%D9%85%D8%B3%D9%84%D8%B3%D9%84%D8%A7%D8%AA-%D9%87%D9%86%D8%AF%D9%8A%D8%A9/",
+    "as_indian_series": "/category/%D9%85%D8%B3%D9%84%D8%B3%D9%84%D8%A7%D8%AA-%D9%8%D9%86%D8%AF%D9%8A%D8%A9/",
     "as_korean_series": "/category/%D9%85%D8%B3%D9%84%D8%B3%D9%84%D8%A7%D8%AA-%D9%83%D9%88%D8%B1%D9%8A%D9%87/", 
     "as_dubbed_series": "/category/dubbed-series/",
     "as_cartoon_series": "/category/cartoon-series/",
@@ -35,10 +35,10 @@ const CATALOG_MAP = {
 };
 
 const manifest = {
-    id: "org.dexworld.arabseed.premium.max.v23", // تصفير كاش البرنامج قسرياً الحين
-    name: "ArabSeed Premium Max v23 - Universal Master",
-    version: "23.0.0",
-    description: "الدمج الشامل: تجميع حديدي للبوسترات مع دعم جلب مصادر البث من الكتالوجات الخارجية الأخرى بـ ViperTLS",
+    id: "org.dexworld.arabseed.premium.max.v24", // تصفير كاش البرنامج قسرياً الحين
+    name: "ArabSeed Premium Max v24 - Universal Master",
+    version: "24.0.0",
+    description: "إصلاح شامل: تجميع حديدي للبوسترات مع دعم جلب مصادر البث للأفلام والمسلسلات من الكتالوجات الخارجية الأخرى بكفاءة",
     logo: "https://m.asd.ink/wp-content/uploads/2023/01/cropped-Untitled-1-1-192x192.png",
     resources: ["catalog", "meta", "stream"],
     types: ["movie", "series"],
@@ -103,7 +103,6 @@ async function getHtmlSmartly(action, targetUrl = '', searchQuery = '') {
     return null;
 }
 
-// دالة التطهير لحذف كلمات البدايات والنهايات لبوسترات نظيفة
 function cleanSeriesTitle(title) {
     if (!title) return "";
     let cleaned = title.trim();
@@ -238,28 +237,24 @@ async function metaHandler({ type, id }) {
     } catch (err) { return { meta: {} }; }
 }
 
-// ============ 6. محرك البث العام والذكي (الحل السحري لظهور البث من أي كتالوج خارجي) ============
+// ============ 6. محرك البث المصلح للأفلام والمسلسلات العامة 100% ============
 async function getDirectLinks(idOrImdb, type) {
     const streams = [];
     try {
         let watchUrl = "";
         let finalId = idOrImdb;
 
-        if (!finalId.startsWith('as_') && !finalId.startsWith('tt')) {
-            finalId = 'as_' + finalId;
-        }
-
-        // أ) إذا كان البوستر مفتوحاً من داخل كتالوج عرب سيد المجمّع
+        // إذا كان الاستدعاء من الكتالوج المجمع الخاص بنا
         if (finalId.startsWith('as_')) {
             watchUrl = Buffer.from(finalId.replace('as_', ''), 'base64url').toString();
         } 
-        // ب) فكرتك العبقرية: إذا كان البوستر مفتوحاً من كتالوج إضافة أخرى (مثل قرمزي أو سينيميتا) ويحمل كشاف tt...
+        // الحل الشامل والذكي: إذا كان الطلب قادم من أي كتالوج خارجي (Cinemeta / قرمزي إلخ) بـ معرف tt...
         else if (finalId.startsWith('tt')) {
             const parts = finalId.split(':');
             const imdbId = parts[0];
             const isSeries = type === 'series' || parts.length > 1;
 
-            // جلب اسم المادة الفعلي من سينيميتا العالمي لمعرفته باللغة العربية والإنجليزية
+            // جلب اسم المادة الأصلي (باللغة العربية أو الإنجليزية) عبر API سينيميتا العالمي
             const metaResponse = await fetch(`https://v3-cinemeta.stremio.com/meta/${type}/${imdbId}.json`);
             const metaData = await metaResponse.json();
             if (!metaData || !metaData.meta) return [];
@@ -267,14 +262,17 @@ async function getDirectLinks(idOrImdb, type) {
             const mediaTitle = metaData.meta.name;
             let searchQuery = mediaTitle;
 
-            // إذا كان مسلسلاً، نقوم بصياغة نص البحث بذكاء للوصول لصفحة الحلقة مباشرة في عرب سيد
+            // هندسة صياغة البحث العكسي الدقيق للمسلسل
             if (isSeries && parts.length > 2) {
                 const seasonNum = parseInt(parts[1]);
                 const episodeNum = parseInt(parts[2]);
                 searchQuery = `${mediaTitle} الموسم ${seasonNum} الحلقة ${episodeNum}`;
+            } else {
+                // للأفلام الخارجية: نبحث باسم الفيلم مجرداً
+                searchQuery = mediaTitle;
             }
 
-            console.log(`[Universal Search] جاري البحث التلقائي عن: ${searchQuery}`);
+            console.log(`[Universal Search] جاري جلب المصادر لـ (${type}) عن طريق البحث عن: ${searchQuery}`);
             const searchHtml = await getHtmlSmartly('search', '', searchQuery);
             if (!searchHtml) return [];
             
