@@ -31,7 +31,7 @@ const CATALOG_MAP = {
     "as_korean_series": "/category/%D9%85%D8%B3%D9%84%D8%B3%D9%84%D8%A7%D8%AA-%D9%83%D9%88%D8%B1%D9%8A%D9%87/", 
     "as_dubbed_series": "/category/dubbed-series/",
     "as_cartoon_series": "/category/cartoon-series/",
-    "as_tv_shows": "/category/%D8%A8%D8%B1%D8%A7%D9%85%D8%ac-%D8%AA%D9%84%D9%81%D8%B2%D9%8A%D9%88%D9%86%D9%8A%D8%A9/",
+    "as_tv_shows": "/category/%D8%A8%D8%B1%D8%A7%D9%85%D8%AC-%D8%AA%D9%84%D9%81%D8%B2%D9%8A%D9%88%D9%86%D9%8A%D8%A9/",
     "as_ramadan_2025": "/category/%D9%85%D8%B3%D9%84%D8%B3%D9%84%D8%A7%D8%AA-%D8%b1%D9%85%D8%b6%D8%a7%d9%86/ramadan-series-2025/"
 };
 
@@ -131,12 +131,12 @@ async function catalogHandler({ type, id, extra }) {
     const seenSeries = new Set();
 
     // السيلكتور المصلح والقاطع: يقرأ عنصر البوستر الرئيسي a.movie__block مباشرة من سورس المتصفح
-    $('a.movie__block, .MovieBlock, .Block--Item, article, .movie__block, article.post, a.episode__item').each((i, el) => {
+    // تم تعديل السيلكتور ليشمل العناصر التي تمثل المسلسلات بشكل كامل في صفحات التصنيفات
+    $('.Block--Item, article.post, .movie__block, .MovieBlock, .Category--Items .MovieBlock, .Category--Items .Block--Item').each((i, el) => {
         const $el = $(el);
         
-        // جلب الـ href والـ title من رأس حاوية البوستر مباشرة لإصلاح النقص الرهيب في القوائم
-        let link = $el.attr('href') || $el.find('a').first().attr('href');
-        let title = $el.attr('title') || $el.find('.episode__title span, .post__info h3, h3, h4').first().text().trim() || $el.find('img').first().attr('alt');
+        let link = $el.find('a').first().attr('href');
+        let title = $el.find('.post__title h3, .MovieBlock--Title, .Block--Item--Title').first().text().trim() || $el.find('img').first().attr('alt');
         let poster = $el.find('img').first().attr('data-src') || $el.find('img').first().attr('src');
 
         if (link && title) {
@@ -146,21 +146,26 @@ async function catalogHandler({ type, id, extra }) {
                 poster = poster.replace(/https?:\/\/[^/]+/g, BASE_URL);
             }
 
-            let isSeriesItem = type === "series" || id.includes("series") || id.includes("shows") || title.includes("مسلسل") || title.includes("الحلقة") || title.includes("حلقة");
+            // التحقق مما إذا كان العنصر هو مسلسل وليس حلقة
+            // يمكننا تحسين هذا بالتحقق من وجود كلمة "مسلسل" في الرابط أو العنوان، أو بنية الرابط
+            let isSeriesEntry = type === "series" && !link.includes("-eps") && !link.includes("الحلقة");
 
-            if (isSeriesItem) {
+            if (isSeriesEntry) {
                 const cleanName = cleanSeriesTitle(title);
+                // نستخدم رابط المسلسل الرئيسي بدلاً من رابط الحلقة
+                const seriesLink = link.includes("/selary/") ? link : link.split("/").slice(0, -2).join("/") + "/"; // محاولة استنتاج رابط المسلسل
+                
                 if (seenSeries.has(cleanName)) return; 
                 seenSeries.add(cleanName);
 
                 metas.push({
-                    id: 'as_' + Buffer.from(link).toString('base64url'),
+                    id: 'as_' + Buffer.from(seriesLink).toString('base64url'),
                     type: "series",
                     name: cleanName, 
                     poster: poster || '',
                     posterShape: 'poster'
                 });
-            } else {
+            } else if (type === "movie") {
                 let cleanMovieName = cleanSeriesTitle(title); 
                 metas.push({
                     id: 'as_' + Buffer.from(link).toString('base64url'),
@@ -181,7 +186,16 @@ async function metaHandler({ type, id }) {
     if (!id.startsWith('as_')) return { meta: {} };
     try {
         const pageUrl = Buffer.from(id.replace('as_', ''), 'base64url').toString();
-        const htmlData = await getHtmlSmartly('get_links', pageUrl);
+        // التأكد من أننا نذهب إلى صفحة المسلسل الرئيسية وليس صفحة حلقة
+        let seriesPageUrl = pageUrl;
+        if (!seriesPageUrl.includes("/selary/")) {
+            // محاولة استنتاج رابط صفحة المسلسل من رابط الحلقة
+            const parts = seriesPageUrl.split("/");
+            // إزالة الجزء الأخير (الحلقة) والجزء الذي يسبقه (s1-eps82)
+            seriesPageUrl = parts.slice(0, -2).join("/") + "/";
+        }
+
+        const htmlData = await getHtmlSmartly('get_links', seriesPageUrl);
         if (!htmlData) return { meta: {} };
 
         const $ = cheerio.load(htmlData);
@@ -257,145 +271,5 @@ async function getDirectLinks(idOrImdb, type) {
         } 
         else if (finalId.startsWith('tt')) {
             const metaResponse = await fetch(`https://v3-cinemeta.stremio.com/meta/${type}/${finalId}.json`);
-            const metaData = await metaResponse.json();
-            const mediaTitle = metaData.meta ? metaData.meta.name : "";
-            if (!mediaTitle) return [];
-
-            const searchHtml = await getHtmlSmartly('search', '', mediaTitle);
-            if (!searchHtml) return [];
-            
-            const $s = cheerio.load(searchHtml);
-            let targetPageUrl = $s('.movie__block a, .MovieBlock a, .Block--Item a, article a').first().attr('href');
-            if (!targetPageUrl) return [];
-
-            watchUrl = targetPageUrl;
-        }
-
-        if (!watchUrl) return [];
-
-        const watchHtml = await getHtmlSmartly('get_links', watchUrl);
-        if (!watchHtml) return [];
-        
-        const servers = [];
-        const b64Regex = /play\.php\?url=([a-zA-Z0-9+/=]+)/g;
-        let match;
-        while ((match = b64Regex.exec(watchHtml)) !== null) {
-            try {
-                let b64Str = match[1];
-                const padding = 4 - (b64Str.length % 4);
-                if (padding !== 4) b64Str += '='.repeat(padding);
-                const decoded = Buffer.from(b64Str, 'base64').toString('utf-8');
-                if (decoded.startsWith('http') && !servers.some(s => s.link === decoded)) {
-                    servers.push({ name: 'عرب سيد مباشر ⚡', link: decoded });
-                }
-            } catch (e) {}
-        }
-
-        const $w = cheerio.load(watchHtml);
-        $w('iframe').each((i, elem) => {
-            let src = $w(elem).attr('src');
-            if (src) {
-                if (src.startsWith('//')) src = 'https:' + src;
-                if (!servers.some(s => s.link === src)) {
-                    servers.push({ name: `سيرفر بث ${i + 1}`, link: src });
-                }
-            }
-        });
-
-        const optimizedServers = servers.slice(0, 3);
-        for (const server of optimizedServers) {
-            let serverHtml = await getHtmlSmartly('get_links', server.link);
-            if (!serverHtml) continue;
-
-            if (serverHtml.includes("eval(function(p,a,c,k,e,")) {
-                const matchJS = /eval\(function\(p,a,c,k,e,[dr]\).*?\}\('(.*?)',(\d+),(\d+),'(.*?)'\.split\('\|'\)/s.exec(serverHtml);
-                if (matchJS) {
-                    try {
-                        let payload = matchJS[1]; const radix = parseInt(matchJS[2]); const symtab = matchJS[4].split('|');
-                        const unbase = (str) => { let res = 0; for (let i = 0; i < str.length; i++) { const c = str[i]; const v = /[0-9]/.test(c) ? parseInt(c) : c.charCodeAt(0) - 87; res = res * radix + v; } return res; };
-                        const unpacked = payload.replace(/\b\w+\b/g, (word) => { const idx = unbase(word); return (symtab[idx] && symtab[idx] !== '') ? symtab[idx] : word; });
-                        serverHtml += "\n" + unpacked;
-                    } catch (e) {}
-                }
-            }
-
-            const m3u8Matches = serverHtml.match(/https?:\/\/[^\s"'<>\\)]+\.m3u8[^\s"'<>\\)]*/gi);
-            if (m3u8Matches) {
-                [...new Set(m3u8Matches)].forEach(videoUrl => {
-                    streams.push({
-                        title: `▶️ [ArabSeed Premium]\n🔗 الجودة: تلقائية HLS`,
-                        url: videoUrl.replace(/\\\//g, '/'),
-                        behaviorHints: { notWebReady: false, proxyHeaders: { request: { "Referer": server.link, "User-Agent": "Mozilla/5.0" } } }
-                    });
-                });
-            }
-
-            const mp4Matches = serverHtml.match(/https?:\/\/[^\s"'<>\\)]+\.mp4[^\s"'<>\\)]*/gi);
-            if (mp4Matches) {
-                [...new Set(mp4Matches)].forEach(videoUrl => {
-                    streams.push({
-                        title: `▶️ [ArabSeed Premium]\n🔗 الجودة: سورس مباشر MP4`,
-                        url: videoUrl.replace(/\\\//g, '/'),
-                        behaviorHints: { notWebReady: false, proxyHeaders: { request: { "Referer": server.link, "User-Agent": "Mozilla/5.0" } } }
-                    });
-                });
-            }
-        }
-
-        if (streams.length === 0) {
-            streams.push({ name: "ArabSeed Web", title: "🌐 فتح صفحة المشاهدة الخارجية المباشرة", externalUrl: watchUrl });
-        }
-
-    } catch (err) { console.error(err); }
-    return streams;
-}
-
-builder.defineCatalogHandler(catalogHandler);
-builder.defineMetaHandler(metaHandler);
-builder.defineStreamHandler(async (args) => {
-    const streams = await getDirectLinks(args.id, args.type);
-    return { streams };
-});
-
-const addonInterface = builder.getInterface();
-
-export default async function handler(req, res) {
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Headers', '*');
-    res.setHeader('Content-Type', 'application/utf-8');
-
-    if (req.method === 'OPTIONS') return res.status(200).end();
-
-    const url = req.url;
-    if (url === '/' || url === '/manifest.json') {
-        return res.status(200).json(addonInterface.manifest);
-    }
-
-    const catalogMatch = url.match(/^\/catalog\/([^/]+)\/([^/]+)(?:\/(.+))?\.json$/);
-    if (catalogMatch) {
-        const [, type, id, extraStr] = catalogMatch;
-        const extra = extraStr ? querystring.parse(extraStr) : {};
-        const result = await catalogHandler({ type, id, extra });
-        return res.status(200).json(result);
-    }
-
-    const metaMatch = url.match(/^\/meta\/([^/]+)\/(.+)\.json$/);
-    if (metaMatch) {
-        const [, type, id] = metaMatch;
-        const result = await metaHandler({ type, id: decodeURIComponent(id) });
-        return res.status(200).json(result);
-    }
-
-    const streamMatch = url.match(/^\/stream\/([^/]+)\/(.+)\.json$/);
-    if (streamMatch) {
-        const [, type, encodedId] = streamMatch;
-        let fullId = decodeURIComponent(encodedId);
-        if (!fullId.startsWith('as_') && !fullId.startsWith('tt') && fullId.includes('as_')) {
-            fullId = fullId.substring(fullId.indexOf('as_'));
-        }
-        const result = await getDirectLinks(fullId, type);
-        return res.status(200).json({ streams: result });
-    }
-
-    return res.status(404).json({ error: 'Not found' });
-}
+            const metaData = await metaResponse.json();            const mediaTitle = metaData.meta ? m
+(Content truncated due to size limit. Use line ranges to read remaining content)
