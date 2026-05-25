@@ -8,38 +8,38 @@ const VIPER_SOLVER_URL = "https://test-1-eight-zeta.vercel.app/solve";
 const GOOGLE_PROXY_URL = "https://script.google.com/macros/s/AKfycbwzwsaeYrNMVo39ot5D2ah72SWsN1NaKa-_0yagRowbZNnByWwBiu94mO6mAUjwVGhSrQ/exec";
 const BASE_URL = "https://m.asd.ink";
 
-// خريطة الأقسام الرسمية المحدثة والمطابقة لكود الـ HTML الذي أرسلته بالملي لفتح كافة الكتالوجات
+// ضبط خريطة الأقسام بالترميز الحرفي الكبير (UPPERCASE) الصحيح للموقع لفتح كافة الكتالوجات فوراً
 const CATALOG_MAP = {
     "as_arabic_movies": "/category/arabic-movies-6/",
     "as_foreign_movies": "/category/foreign-movies-6/",
-    "as_netflix_movies": "/category/netfilx/%d8%a7%d9%81%d9%84%d8%a7%d9%8ام-netfilx/",
+    "as_netflix_movies": "/category/netfilx/%D8%A7%D9%81%D9%84%D8%A7%D9%85-netfilx/",
     "as_indian_movies": "/category/indian-movies/",
     "as_asian_movies": "/category/asian-movies/",
     "as_turkish_movies": "/category/turkish-movies/",
-    "as_dubbed_movies": "/category/%d8%a7%d9%81%d9%84%d8%a7%d9%85-%d9%85%d8%af%d8%a8%d9%84%d8%ac%d8%a9-1/",
+    "as_dubbed_movies": "/category/%D8%A7%D9%81%D9%84%D8%A7%D9%85-%D9%85%D8%AF%D8%A8%D9%84%D8%AC%D8%A9-1/",
     "as_animation_movies": "/category/animation-movies/",
     "as_wrestling": "/category/wwe-shows/",
-    "as_plays": "/category/%d9%85%d8%b3%d8%b1%d8%ad%d9%8a%d8%a7%d8%aa-%d8%b9%d8%b1%d8%a8%d9%8a/",
+    "as_plays": "/category/%D9%85%D8%B3%D8%B1%D8%AD%D9%8A%D8%A7%D8%AA-%D8%B9%D8%B1%D8%A8%D9%8A/",
     
-    // تصحيح مسارات المسلسلات بناءً على روابط الدومين المباشرة لمنع اختفاء الأقسام العربية والآسيوية والمصرية
+    // إصلاح المسارات والمجلدات بالترميز الحرفي الأصلي لتدفق مسلسلات (المصرية، الهندية، والآسيوية) بالكامل
     "as_arabic_series": "/category/arabic-series-14/",
-    "as_egyptian_series": "/category/%d9%85%d8%b3%d9%84%d8%b3%d9%84%d8%a7%d8%aa-%d9%85%d8%b5%d8%b1%d9%8a%d9%8ه/",
+    "as_egyptian_series": "/category/%D9%85%D8%B3%D9%84%D8%B3%D9%84%D8%A7%D8%AA-%D9%85%D8%B5%D8%B1%D9%8A%D9%87/",
     "as_foreign_series": "/category/foreign-series-7/",
     "as_netflix_series": "/category/netflix/netflix-series/",
     "as_turkish_series": "/category/turkish-series-2/",
-    "as_indian_series": "/category/%d9%85%d8%b3%d9%84%d8%b3%d9%84%d8%a7%d8%aa-%d9%87%d9%86%d8%af%d9%8a%d8%a9/",
-    "as_korean_series": "/category/%d9%85%d8%b3%d9%84%d8%b3%d9%84%d8%a7%d8%aa-%d9%8a%d9%84%d9%8a%d9%8f%d9%88%d8%b1%d9%8a%d9%8eh/", 
+    "as_indian_series": "/category/%D9%85%D8%B3%D9%84%D8%B3%D9%84%D8%A7%D8%AA-%D9%87%D9%86%D8%AF%D9%8A%D8%A9/",
+    "as_korean_series": "/category/%D9%85%D8%B3%D9%84%D8%B3%D9%84%D8%A7%D8%AA-%D9%83%D9%88%D8%B1%D9%8A%D9%87/", 
     "as_dubbed_series": "/category/dubbed-series/",
     "as_cartoon_series": "/category/cartoon-series/",
-    "as_tv_shows": "/category/%d8%a8%d8%b1%d8%a7%d9%85%d8%ac-%d8%aa%d9%84%d9%81%d8%b2%d9%8a%d9%88%d9%86%d9%8a%d8%a9/",
-    "as_ramadan_2025": "/category/%d9%85%d8%b3%d9%84%d8%b3%d9%84%d8%a7%d8%aa-%d8%b1%d9%85%d8%b6%d8%a7%d9%86/ramadan-series-2025/"
+    "as_tv_shows": "/category/%D8%A8%D8%B1%D8%A7%D9%85%D8%ac-%D8%AA%D9%84%D9%81%D8%B2%D9%8A%D9%88%D9%86%D9%8A%D8%A9/",
+    "as_ramadan_2025": "/category/%D9%85%D8%B3%D9%84%D8%B3%D9%84%D8%A7%D8%AA-%D8%B1%D9%85%D8%B6%D8%A7%D9%86/ramadan-series-2025/"
 };
 
-// ============ 2. الـ Manifest الـ Premium الموحد المستقر ============
+// ============ 2. الـ Manifest الـ Premium الموحد المستقر لستريميو ============
 const manifest = {
-    id: "org.dexworld.arabseed.premium.max.v15", // تصفير كاش ستريميو بالكامل الحين لتطبيق الهيكلية الجديدة
-    name: "ArabSeed Premium Max v15 - Ultra Final",
-    version: "15.0.0",
+    id: "org.dexworld.arabseed.premium.max.v16", // تصفير الكاش بالكامل لإقلاع المنظومة الحديثة
+    name: "ArabSeed Premium Max v16 - Ultra Final",
+    version: "16.0.0",
     description: "تجميع وتطهير فائق للعناوين مع تحديث كامل الروابط وتفعيل مصادر البث بـ ViperTLS",
     logo: "https://m.asd.ink/wp-content/uploads/2023/01/cropped-Untitled-1-1-192x192.png",
     resources: ["catalog", "meta", "stream"],
@@ -48,7 +48,7 @@ const manifest = {
     catalogs: [
         { type: "movie", id: "as_arabic_movies", name: "عرب سيد - أفلام عربية", extra: [{ name: "search", isRequired: false }, { name: "skip", isRequired: false }] },
         { type: "movie", id: "as_foreign_movies", name: "عرب سيد - أفلام أجنبية", extra: [{ name: "search", isRequired: false }, { name: "skip", isRequired: false }] },
-        { type: "movie", id: "as_netflix_movies", name: "عرب سيد - أفلام Netflix", extra: [{ name: "search", isRequired: false }, { name: "skip", isRequired: false }] },
+        { type: "movie", id: "as_netflix_movies", name: "عرب sied - أفلام Netflix", extra: [{ name: "search", isRequired: false }, { name: "skip", isRequired: false }] },
         { type: "movie", id: "as_indian_movies", name: "عرب سيد - أفلام هندية", extra: [{ name: "search", isRequired: false }, { name: "skip", isRequired: false }] },
         { type: "movie", id: "as_turkish_movies", name: "عرب سيد - أفلام تركية", extra: [{ name: "search", isRequired: false }, { name: "skip", isRequired: false }] },
         { type: "movie", id: "as_animation_movies", name: "عرب سيد - أنيميشن كرتون", extra: [{ name: "search", isRequired: false }, { name: "skip", isRequired: false }] },
@@ -105,7 +105,7 @@ async function getHtmlSmartly(action, targetUrl = '', searchQuery = '') {
     return null;
 }
 
-// دالة التطهير الفائقة المطورة لحذف كلمات البدايات (مسلسل / فيلم / فلم / افلام) تماماً
+// دالة التطهير الفائقة المطورة لحذف كلمات البدايات والنهايات تماماً
 function cleanSeriesTitle(title) {
     if (!title) return "";
     let cleaned = title.trim();
@@ -130,14 +130,13 @@ async function catalogHandler({ type, id, extra }) {
 
     const $ = cheerio.load(htmlData);
     const metas = [];
-    const seenSeries = new Set();    
-    $('li, article').each(...)
+    const seenSeries = new Set();
+
+    $('.MovieBlock, .Block--Item, article, .Small--Box, .movie__block, .post-list, a.movie__block, article.post').each((i, el) => {
         const $el = $(el);
         let link = $el.attr('href') || $el.find('a').first().attr('href');
         let title = $el.find('.post__info h3, h3, h4, .BlockTitle, .Title, .entry-title').first().text().trim() || $el.attr('title') || $el.find('img').first().attr('alt');
         let poster = $el.find('img').first().attr('data-src') || $el.find('img').first().attr('src');
-    // fallback: og:image من صفحة المقال
-if (!poster) poster = '';
 
         if (link && title) {
             if (!link.startsWith('http')) link = new URL(link, BASE_URL).href;
@@ -146,7 +145,6 @@ if (!poster) poster = '';
                 poster = poster.replace(/https?:\/\/[^/]+/g, BASE_URL);
             }
 
-            // الاعتماد القاطع على هويّة القسم (id) لمنع اختفاء الأقسام الأجنبية والآسيوية والمصرية
             let isSeriesItem = type === "series" || id.includes("series") || id.includes("shows") || title.includes("مسلسل") || title.includes("الحلقة") || title.includes("حلقة");
 
             if (isSeriesItem) {
@@ -187,9 +185,7 @@ async function metaHandler({ type, id }) {
 
         const $ = cheerio.load(htmlData);
         let name = $('.post__title h1').text().trim() || $('h1').first().text().trim() || $('title').text().trim();
-        let poster = htmlData.match(/property="og:image"\s+content="([^"]+)"/)?.[1] || 
-             htmlData.match(/content="([^"]+)"\s+property="og:image"/)?.[1] || '';
-
+        let poster = $('.poster__single img, .Poster img, .single-thumb img').first().attr('src') || $('.poster__single img, .post__image img').first().attr('data-src');
         const description = $('.story__text, .descrip, .StoryLine').first().text().trim();
 
         if (poster) poster = poster.replace(/https?:\/\/[^/]+/g, BASE_URL);
@@ -249,17 +245,15 @@ async function getDirectLinks(idOrImdb, type) {
     const streams = [];
     try {
         let watchUrl = "";
-
         let finalId = idOrImdb;
+
+        // تأمين وتوجيه البادئة إجبارياً لمنع الروابط المكسورة
         if (!finalId.startsWith('as_') && !finalId.startsWith('tt')) {
             finalId = 'as_' + finalId;
         }
 
         if (finalId.startsWith('as_')) {
-            const pageUrl = Buffer.from(finalId.replace('as_', ''), 'base64url').toString();
-            // إصلاح الـ Watch URL بناءً على سورس الـ HTML: نطلب صفحة الحلقة مباشرة وبدون إضافة كلمة /watch/ لتفادي الـ 404 واختفاء المصادر
-            watchUrl = pageUrl.replace(/\/$/, '') + '/watch/';
-
+            watchUrl = Buffer.from(finalId.replace('as_', ''), 'base64url').toString();
         } 
         else if (finalId.startsWith('tt')) {
             const metaResponse = await fetch(`https://v3-cinemeta.stremio.com/meta/${type}/${finalId}.json`);
@@ -277,12 +271,12 @@ async function getDirectLinks(idOrImdb, type) {
             watchUrl = targetPageUrl;
         }
 
-        console.log(`جاري جلب السيرفرات مباشرة من حاوية الحلقة الحقيقية: ${watchUrl}`);
+        if (!watchUrl) return [];
+
         const watchHtml = await getHtmlSmartly('get_links', watchUrl);
         if (!watchHtml) return [];
         
         const servers = [];
-        // فك شفرات روابط play.php?url=BASE64 التابعة لعرب سيد مباشر
         const b64Regex = /play\.php\?url=([a-zA-Z0-9+/=]+)/g;
         let match;
         while ((match = b64Regex.exec(watchHtml)) !== null) {
@@ -396,6 +390,8 @@ export default async function handler(req, res) {
     if (streamMatch) {
         const [, type, encodedId] = streamMatch;
         let fullId = decodeURIComponent(encodedId);
+        
+        // التقط المعرف الكامل بالبادئة الصريحة لفك شفرات الـ Base64 فوراً وتشغيل الروابط
         if (!fullId.startsWith('as_') && !fullId.startsWith('tt') && fullId.includes('as_')) {
             fullId = fullId.substring(fullId.indexOf('as_'));
         }
