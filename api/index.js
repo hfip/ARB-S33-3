@@ -12,33 +12,33 @@ const BASE_URL = "https://m.asd.ink";
 const CATALOG_MAP = {
     "as_arabic_movies": "/category/arabic-movies-6/",
     "as_foreign_movies": "/category/foreign-movies-6/",
-    "as_netflix_movies": "/category/netfilx/%D8%A7%D9%81%D9%84%D8%A7%D9%85-netfilx/",
+    "as_netflix_movies": "/category/netfilx/%D8%A7%D9%81%D9%84%D8%A7%D9%8من-netfilx/",
     "as_indian_movies": "/category/indian-movies/",
     "as_asian_movies": "/category/asian-movies/",
     "as_turkish_movies": "/category/turkish-movies/",
     "as_dubbed_movies": "/category/%D8%A7%D9%81%D9%84%D8%A7%D9%85-%D9%85%D8%AF%D8%A8%D9%84%D8%AC%D8%A9-1/",
     "as_animation_movies": "/category/animation-movies/",
     "as_wrestling": "/category/wwe-shows/",
-    "as_plays": "/category/%D9%85%D8%B3%D8%B1%D8%ad%D9%8a%D8%a7%D8%aa-%D8%b9%D8%b1%D8%a8%D9%8I/",
+    "as_plays": "/category/%D9%85%D8%B3%D8%B1%D8%AD%D9%8A%D8%A7%D8%AA-%D8%B9%D8%B1%D8%A8%D9%8I/",
     
     "as_arabic_series": "/category/arabic-series-14/",
-    "as_egyptian_series": "/category/%D9%85%D8%B3%D9%84%D8%b3%D9%84%D8%a7%D8%aa-%D9%85%D8%b5%D8%b1%D9%8a%D9%8ه/",
+    "as_egyptian_series": "/category/%D9%85%D8%B3%D9%84%D8%B3%D9%84%D8%A7%D8%AA-%D9%85%D8%B5%D8%B1%D9%8A%D9%8ه/",
     "as_foreign_series": "/category/foreign-series-7/",
     "as_netflix_series": "/category/netflix/netflix-series/",
     "as_turkish_series": "/category/turkish-series-2/",
-    "as_indian_series": "/category/%D9%85%D8%b3%D9%84%D8%b3%D9%84%D8%a7%D8%aa-%D9%84%D9%86%D8%af%D9%8a%D8%a9/",
-    "as_korean_series": "/category/%D9%85%D8%b3%D9%84%D8%b3%D9%84%D8%a7%D8%aa-%D9%82%D9%88%D8%b1%D9%8a%D9%8ه/", 
+    "as_indian_series": "/category/%D9%85%D8%B3%D9%84%D8%B3%D9%84%D8%A7%D8%AA-%D9%84%D9%86%D8%AF%D9%8A%D8%A9/",
+    "as_korean_series": "/category/%D9%85%D8%B3%D9%84%D8%B3%D9%84%D8%A7%D8%AA-%D9%82%D9%88%D8%B1%D9%8A%D9%8ه/", 
     "as_dubbed_series": "/category/dubbed-series/",
     "as_cartoon_series": "/category/cartoon-series/",
-    "as_tv_shows": "/category/%D8%a8%D8%b1%D8%a7%D9%85%D8%ac-%D8%aa%D9%84%D9%81%D8%b2%D9%8a%D9%88%D9%86%D9%8a%D8%a9/",
-    "as_ramadan_2025": "/category/%D9%85%D8%b3%D9%84%D8%b3%D9%84%D8%a7%D8%aa-%D8%b1%D9%85%D8%b6%d8%a7%d9%86/ramadan-series-2025/"
+    "as_tv_shows": "/category/%D8%A8%D8%B1%D8%A7%D9%85%D8%ac-%D8%AA%D9%84%D9%81%D8%B2%D9%8A%D9%88%D9%86%D9%8A%D8%A9/",
+    "as_ramadan_2025": "/category/%D9%85%D8%B3%D9%84%D8%B3%D9%84%D8%A7%D8%AA-%D8%B1%D9%85%D8%B6%D8%A7%D9%86/ramadan-series-2025/"
 };
 
 const manifest = {
     id: "org.dexworld.arabseed.premium.max.v26", 
     name: "ArabSeed Premium Max v26 - Universal Stream Fix",
-    version: "26.1.0",
-    description: "تجميع حديدي للكتالوجات مع تخطي حظر 403 Forbidden وتفعيل الـ Referer المباشر الذكي لـ Stremio",
+    version: "26.3.0",
+    description: "تخطي واجهة المشغل الديناميكي المطور وحقن مسارات trend2 لتشغيل الميديا الحية بدون 403 Forbidden",
     logo: "https://m.asd.ink/wp-content/uploads/2023/01/cropped-Untitled-1-1-192x192.png",
     resources: ["catalog", "meta", "stream"],
     types: ["movie", "series"],
@@ -252,7 +252,7 @@ async function metaHandler({ type, id }) {
     } catch (err) { return { meta: {} }; }
 }
 
-// ============ 6. معالج فك الحجب وحقن الـ Referer لـ منع 403 Forbidden ============
+// ============ 6. محرك معالجة واستخراج الروابط الحية المطور لـ مسار trend2 ============
 async function getDirectLinks(stremioId, type) {
     const streams = [];
     try {
@@ -291,20 +291,25 @@ async function getDirectLinks(stremioId, type) {
 
         if (!watchUrl) return [];
 
-        // التأكد من توجيه الطلب إلى صفحة المشاهدة والـ CDN الحقيقي /watch/
-        if (!watchUrl.endsWith('/watch/')) {
-            watchUrl = watchUrl.replace(/\/$/, '') + '/watch/';
-        }
+        // تكييف وحقن مسار المشاهدة المتعدد المكتشف حديثاً
+        let watchPageUrl = watchUrl.endsWith('/watch/') ? watchUrl : watchUrl.replace(/\/$/, '') + '/watch/';
+        let trendPageUrl = watchUrl.replace(/\/watch\/?$/, '').replace(/\/$/, '') + '/trend2/';
 
-        const watchHtml = await getHtmlSmartly('get_links', watchUrl);
-        if (!watchHtml) return [];
+        // جلب سورس المشاهدة الرئيسي وسورس صفحة المشغل التفاعلي بالتوازي لضمان تخطي التشفير
+        const [watchHtml, trendHtml] = await Promise.all([
+            getHtmlSmartly('get_links', watchPageUrl),
+            getHtmlSmartly('get_links', trendPageUrl).catch(() => null)
+        ]);
+
+        const combinedHtml = (watchHtml || "") + "\n" + (trendHtml || "");
+        if (!combinedHtml.trim()) return [];
         
         const servers = [];
         
-        // 1. فك شفرات روابط Base64 إن وجدت
+        // جلب مشغلات البث المباشر المخبأة في جافا سكريبت
         const b64Regex = /play\.php\?url=([a-zA-Z0-9+/=]+)/g;
         let match;
-        while ((match = b64Regex.exec(watchHtml)) !== null) {
+        while ((match = b64Regex.exec(combinedHtml)) !== null) {
             try {
                 let b64Str = match[1];
                 const padding = 4 - (b64Str.length % 4);
@@ -316,10 +321,9 @@ async function getDirectLinks(stremioId, type) {
             } catch (e) {}
         }
 
-        // 2. قراءة الـ Iframe المدمج
-        const $w = cheerio.load(watchHtml);
-        $w('iframe').each((i, elem) => {
-            let src = $w(elem).attr('src');
+        const $w = cheerio.load(combinedHtml);
+        $w('iframe, video, source').each((i, elem) => {
+            let src = $w(elem).attr('src') || $w(elem).attr('data-src');
             if (src) {
                 if (src.startsWith('//')) src = 'https:' + src;
                 if (!servers.some(s => s.link === src)) {
@@ -328,35 +332,18 @@ async function getDirectLinks(stremioId, type) {
             }
         });
 
-        // هيدرز مخصصة ومطابقة لطلب الآيفون تماماً لتخطي جدار الحماية الخارجي
+        // الهيدرز المحدثة كلياً والمطابقة لهوية الآيفون لـ كسر حظر الـ CDN والتوكنز المؤقتة حية
         const bypassHeaders = {
             "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_7 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.1 Mobile/15E148 Safari/604.1",
-            "Referer": watchUrl,
+            "Referer": trendPageUrl,
             "Origin": "https://m.asd.ink",
             "Accept": "*/*",
-            "Accept-Language": "ar-EG,ar;q=0.9,en-US;q=0.8,en;q=0.7"
+            "Accept-Language": "ar-EG,ar;q=0.9,en-US;q=0.8,en;q=0.7",
+            "Connection": "keep-alive"
         };
 
-        // 3. صيد روابط الـ CDN والـ Boutique مباشرة من السورس الأساسي وحقن الهيدرز لتخطي الـ 403
-        const cdnMatches = watchHtml.match(/https?:\/\/[^\s"'<>\\)]+cdn[^\s"'<>\\)]+/gi);
-        if (cdnMatches) {
-            [...new Set(cdnMatches)].forEach(url => {
-                let cleanUrl = url.replace(/\\/g, '').replace(/[恢"';}>].*$/, '');
-                if ((cleanUrl.includes('.mp4') || cleanUrl.includes('/video')) && !streams.some(s => s.url === cleanUrl)) {
-                    streams.push({
-                        title: `▶️ [ArabSeed Premium] ⚡\n🔗 جودة: سورس مباشر MP4`,
-                        url: cleanUrl,
-                        behaviorHints: { 
-                            notWebReady: false, 
-                            proxyHeaders: { request: bypassHeaders } // حقن الحماية هنا لمنع حظر الميديا في المشغلات
-                        }
-                    });
-                }
-            });
-        }
-
-        // 4. الغوص وفحص السيرفرات الفرعية مع تمرير الهيدرز الذكية لكل سيرفر فرعي
-        const optimizedServers = servers.slice(0, 3);
+        // الغوص في السيرفرات الفرعية المجمعة واصطياد الروابط حية
+        const optimizedServers = servers.slice(0, 4);
         for (const server of optimizedServers) {
             let serverHtml = await getHtmlSmartly('get_links', server.link);
             if (!serverHtml) continue;
@@ -373,14 +360,14 @@ async function getDirectLinks(stremioId, type) {
                 }
             }
 
-            // صيد ملفات التوزيع التلقائي HLS
+            // اقتناص الـ HLS الحية (m3u8)
             const m3u8Matches = serverHtml.match(/https?:\/\/[^\s"'<>\\)]+\.m3u8[^\s"'<>\\)]*/gi);
             if (m3u8Matches) {
                 [...new Set(m3u8Matches)].forEach(videoUrl => {
                     let cleanVideoUrl = videoUrl.replace(/\\/g, '');
                     if (!streams.some(s => s.url === cleanVideoUrl)) {
                         streams.push({
-                            title: `▶️ [ArabSeed Premium]\n🔗 الجودة: تلقائية HLS`,
+                            title: `▶️ [ArabSeed Premium]\n🔗 جودة تلقائية HLS ⚡`,
                             url: cleanVideoUrl,
                             behaviorHints: { 
                                 notWebReady: false, 
@@ -391,14 +378,14 @@ async function getDirectLinks(stremioId, type) {
                 });
             }
 
-            // صيد ملفات الـ MP4 من السيرفرات الفرعية
-            const mp4Matches = serverHtml.match(/https?:\/\/[^\s"'<>\\)]+(?:\.mp4|\/video)[^\s"'<>\\)]*/gi);
+            // اقتناص روابط الـ MP4 وسورسات الـ CDN المتغيرة المباشرة
+            const mp4Matches = serverHtml.match(/https?:\/\/[^\s"'<>\\)]+(?:\.mp4|\/video|cdn)[^\s"'<>\\)]*/gi);
             if (mp4Matches) {
                 [...new Set(mp4Matches)].forEach(videoUrl => {
-                    let cleanVideoUrl = videoUrl.replace(/\\/g, '');
+                    let cleanVideoUrl = videoUrl.replace(/\\/g, '').replace(/[恢"';}>].*$/, '');
                     if (!streams.some(s => s.url === cleanVideoUrl)) {
                         streams.push({
-                            title: `▶️ [ArabSeed Premium]\n🔗 الجودة: سورس فرعي MP4`,
+                            title: `▶️ [ArabSeed Premium]\n🔗 جودة سورس مباشر MP4`,
                             url: cleanVideoUrl,
                             behaviorHints: { 
                                 notWebReady: false, 
@@ -410,8 +397,26 @@ async function getDirectLinks(stremioId, type) {
             }
         }
 
+        // خيار الطوارئ الفوري في حال كانت الروابط محمية للغاية داخل الـ CDN
+        const cdnMatches = combinedHtml.match(/https?:\/\/[^\s"'<>\\)]+cdn[^\s"'<>\\)]+/gi);
+        if (cdnMatches && streams.length === 0) {
+            [...new Set(cdnMatches)].forEach(url => {
+                let cleanUrl = url.replace(/\\/g, '').replace(/[恢"';}>].*$/, '');
+                if ((cleanUrl.includes('.mp4') || cleanUrl.includes('/video')) && !streams.some(s => s.url === cleanUrl)) {
+                    streams.push({
+                        title: `▶️ [ArabSeed Premium] ⚡\n🔗 جودة ميديا CDN فورية`,
+                        url: cleanUrl,
+                        behaviorHints: { 
+                            notWebReady: false, 
+                            proxyHeaders: { request: { ...bypassHeaders, "Referer": trendPageUrl } }
+                        }
+                    });
+                }
+            });
+        }
+
         if (streams.length === 0) {
-            streams.push({ name: "ArabSeed Web", title: "🌐 فتح صفحة المشاهدة الخارجية المباشرة", externalUrl: watchUrl });
+            streams.push({ name: "ArabSeed Web", title: "🌐 فتح صفحة المشاهدة الخارجية المباشرة", externalUrl: watchPageUrl });
         }
 
     } catch (err) { console.error(err); }
