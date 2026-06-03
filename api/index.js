@@ -17,7 +17,7 @@ const BASE_URL = "https://m.asd.ink";
 
 // ── روابط سيرفر Python على Hugging Face ──
 // غيّر hfip-arabseed-streams لاسم الـ Space اللي سترفعه
-const HF_BASE = "https://hfip-arabseed-streams.hf.space";
+const HF_BASE = "https://hfip-arstreams.hf.space";
 const HF_SOLVE_URL        = `${HF_BASE}/solve`;           // جلب HTML
 const HF_EXTRACT_URL      = `${HF_BASE}/extract_streams`; // سحب روابط البث
 const HF_SEARCH_URL       = `${HF_BASE}/search_reverse`;  // البحث بالاسم
